@@ -24,7 +24,7 @@ services:
       DATABASE_URL: postgresql://carbon:carbon@postgres:5432/carbon_coach?schema=public
       JWT_SECRET: local-dev-carbon-coach-secret-change-me
       GEMINI_API_KEY: ""
-      GEMINI_MODEL: gemini-1.5-flash
+      GEMINI_MODEL: gemini-2.5-flash-lite
       PORT: 4000
       NODE_ENV: development
       FRONTEND_ORIGIN: http://localhost:5173
@@ -48,4 +48,3 @@ services:
 
 volumes:
   carbon_coach_pg:
-
