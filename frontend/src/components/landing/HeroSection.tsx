@@ -25,7 +25,7 @@ export function HeroSection({ onDemo, loading }: { onDemo: () => void; loading: 
             Calculate your footprint, understand the why behind every chart, and reduce emissions with a practical Carbon Twin action plan.
           </p>
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button onClick={onDemo} disabled={loading} className="bg-white text-ink hover:bg-mint">
+            <Button onClick={onDemo} isLoading={loading} loadingLabel="Loading demo..." className="bg-white text-ink hover:bg-mint">
               Try Demo Account
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Button>
@@ -50,4 +50,3 @@ export function HeroSection({ onDemo, loading }: { onDemo: () => void; loading: 
     </section>
   );
 }
-

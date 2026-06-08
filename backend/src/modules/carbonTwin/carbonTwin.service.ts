@@ -9,7 +9,7 @@ import {
   simulationAiSchema
 } from "../ai/aiResponse.schemas";
 import { promptTemplates } from "../ai/promptTemplates";
-import { generateStructuredAi } from "../ai/structuredAi.service";
+import { generateStructuredAiResult } from "../ai/structuredAi.service";
 import { badgesService } from "../badges/badges.service";
 
 async function getCategoryTotals(userId: string) {
@@ -74,7 +74,7 @@ export const carbonTwinService = {
       userConstraints
     });
 
-    const aiTwin = await generateStructuredAi(
+    const aiTwinResult = await generateStructuredAiResult(
       promptTemplates.CARBON_TWIN_PROFILE_PROMPT(context),
       carbonTwinProfileAiSchema,
       fallbackCarbonTwin({
@@ -84,6 +84,7 @@ export const carbonTwinService = {
         userConstraints
       })
     );
+    const aiTwin = aiTwinResult.data;
 
     const twin = await prisma.carbonTwinProfile.upsert({
       where: { userId },
@@ -106,7 +107,7 @@ export const carbonTwinService = {
       }
     });
 
-    return twin;
+    return { twin, usedLocalInsights: aiTwinResult.usedFallback };
   },
 
   async get(userId: string) {
@@ -128,7 +129,8 @@ export const carbonTwinService = {
   },
 
   async simulate(userId: string, input: { days: number; assumptions: Record<string, unknown> }) {
-    const twin = await prisma.carbonTwinProfile.findUnique({ where: { userId } }) ?? await this.build(userId);
+    const existingTwin = await prisma.carbonTwinProfile.findUnique({ where: { userId } });
+    const twin = existingTwin ?? (await this.build(userId)).twin;
     const savingsPercent = Number(input.assumptions.savingsPercent ?? 15);
     const scenarioName = String(input.assumptions.scenarioName ?? "30-Day Reduction Scenario");
     const fallback = fallbackSimulation({
@@ -139,13 +141,14 @@ export const carbonTwinService = {
       assumptions: input.assumptions
     });
 
-    const simulation = await generateStructuredAi(
+    const simulationResult = await generateStructuredAiResult(
       promptTemplates.REDUCTION_SIMULATION_PROMPT(JSON.stringify({ twin, days: input.days, assumptions: input.assumptions })),
       simulationAiSchema,
       fallback
     );
+    const simulation = simulationResult.data;
 
-    return prisma.carbonTwinSimulation.create({
+    const created = await prisma.carbonTwinSimulation.create({
       data: {
         userId,
         scenarioName: simulation.scenarioName,
@@ -155,10 +158,13 @@ export const carbonTwinService = {
         assumptions: simulation.assumptions as Prisma.InputJsonValue
       }
     });
+
+    return { simulation: created, usedLocalInsights: simulationResult.usedFallback };
   },
 
   async generateActionPlan(userId: string) {
-    const twin = await prisma.carbonTwinProfile.findUnique({ where: { userId } }) ?? await this.build(userId);
+    const existingTwin = await prisma.carbonTwinProfile.findUnique({ where: { userId } });
+    const twin = existingTwin ?? (await this.build(userId)).twin;
     const context = JSON.stringify({
       twin: {
         ...twin,
@@ -166,11 +172,12 @@ export const carbonTwinService = {
       }
     });
 
-    const plan = await generateStructuredAi(
+    const planResult = await generateStructuredAiResult(
       promptTemplates.THIRTY_DAY_ACTION_PLAN_PROMPT(context),
       actionPlanAiSchema,
       fallbackActionPlan(twin.topEmissionSource)
     );
+    const plan = planResult.data;
 
     await prisma.actionPlan.updateMany({
       where: { userId, status: "Active" },
@@ -178,7 +185,7 @@ export const carbonTwinService = {
     });
 
     const startDate = new Date();
-    return prisma.actionPlan.create({
+    const actionPlan = await prisma.actionPlan.create({
       data: {
         userId,
         title: plan.title,
@@ -200,6 +207,8 @@ export const carbonTwinService = {
       },
       include: { items: { orderBy: { dayNumber: "asc" } } }
     });
+
+    return { actionPlan, usedLocalInsights: planResult.usedFallback };
   },
 
   async updateActionItem(userId: string, id: string, status: "Pending" | "Completed") {

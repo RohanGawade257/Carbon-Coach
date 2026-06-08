@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { useAuthStore } from "./stores/authStore";
 import { AppLayout } from "./components/layout/AppLayout";
@@ -15,15 +16,26 @@ import { RecommendationsPage } from "./pages/RecommendationsPage";
 import { ChallengesPage } from "./pages/ChallengesPage";
 import { BadgesPage } from "./pages/BadgesPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { ToastViewport } from "./components/ui/ToastViewport";
 
 export default function App() {
   const hydrateMe = useAuthStore((state) => state.hydrateMe);
+  const location = useLocation();
 
   useEffect(() => {
     void hydrateMe();
   }, [hydrateMe]);
 
+  useEffect(() => {
+    if (!location.hash) return;
+    window.setTimeout(() => {
+      const target = document.querySelector(location.hash);
+      target?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 80);
+  }, [location]);
+
   return (
+    <>
     <Routes>
       <Route path="/" element={<LandingPage />} />
       <Route path="/login" element={<LoginPage />} />
@@ -43,6 +55,7 @@ export default function App() {
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <ToastViewport />
+    </>
   );
 }
-

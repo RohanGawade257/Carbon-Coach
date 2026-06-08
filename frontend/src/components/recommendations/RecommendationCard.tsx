@@ -6,9 +6,11 @@ import { Card } from "../ui/Card";
 
 export function RecommendationCard({
   recommendation,
+  isUpdating,
   onUpdate
 }: {
   recommendation: Recommendation;
+  isUpdating?: boolean;
   onUpdate: (id: string, status: Recommendation["status"]) => Promise<void>;
 }) {
   return (
@@ -31,14 +33,21 @@ export function RecommendationCard({
         <BadgePill label={`${Number(recommendation.estimatedSavingsKgCo2e).toFixed(1)} kg CO2e`} variant="neutral" />
       </div>
       <div className="flex flex-wrap gap-2">
-        <Button variant="secondary" onClick={() => onUpdate(recommendation.id, "Accepted")}>
+        <Button variant="secondary" isLoading={isUpdating} loadingLabel="Saving..." onClick={() => onUpdate(recommendation.id, "Accepted")}>
           Accept
         </Button>
-        <Button onClick={() => onUpdate(recommendation.id, "Completed")}>
+        <Button
+          isLoading={isUpdating}
+          loadingLabel="Completing..."
+          feedbackState={recommendation.status === "Completed" ? "success" : "idle"}
+          successLabel="Completed"
+          disabled={recommendation.status === "Completed"}
+          onClick={() => onUpdate(recommendation.id, "Completed")}
+        >
           <Check className="h-4 w-4" aria-hidden="true" />
           Complete
         </Button>
-        <Button variant="ghost" onClick={() => onUpdate(recommendation.id, "Dismissed")}>
+        <Button variant="ghost" isLoading={isUpdating} loadingLabel="Saving..." onClick={() => onUpdate(recommendation.id, "Dismissed")}>
           <X className="h-4 w-4" aria-hidden="true" />
           Dismiss
         </Button>
@@ -46,4 +55,3 @@ export function RecommendationCard({
     </Card>
   );
 }
-

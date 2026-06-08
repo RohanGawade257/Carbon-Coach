@@ -32,6 +32,23 @@ export type DashboardResponse = {
       baselineComparison: DashboardInsight & { title: string; value: number; unit: string };
       topCategory: DashboardInsight & { title: string; value: string; kgCo2e: number; percentage: number };
       estimatedSavings: DashboardInsight & { title: string; value: number; unit: string };
+      planProgress: DashboardInsight & {
+        title: string;
+        completedDays: number;
+        totalDays: number;
+        remainingDays: number;
+        completionPercentage: number;
+        completedEstimatedSavings: number;
+        totalEstimatedSavings: number;
+        projectedReductionPercent: number;
+      };
+    };
+    futureYou: DashboardInsight & {
+      currentEmissions: number;
+      projectedEmissions: number;
+      estimatedReductionKg: number;
+      estimatedReductionPercent: number;
+      timeframeDays: number;
     };
     charts: {
       categoryBreakdown: Array<DashboardInsight & { category: string; kgCo2e: number; percentage: number }>;
@@ -45,6 +62,10 @@ export type DashboardResponse = {
     recentActivity: FootprintEntry[];
     carbonTwin: CarbonTwinProfile | null;
   };
+};
+
+export type LocalInsightsMeta = {
+  usedLocalInsights?: boolean;
 };
 
 export type ApiShapes = {
@@ -61,4 +82,3 @@ export type ApiShapes = {
   message: { message: AiMessage };
   userChallenge: { userChallenge: UserChallenge };
 };
-

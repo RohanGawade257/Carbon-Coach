@@ -9,7 +9,7 @@ export function TryDemoSection({ onDemo, loading }: { onDemo: () => void; loadin
           <h2 className="text-3xl font-black">Try the full demo instantly.</h2>
           <p className="mt-2 text-emerald-50">No registration required. Demo profile, footprint data, Carbon Twin, action plan, badges, and AI chat are preloaded.</p>
         </div>
-        <Button onClick={onDemo} disabled={loading} className="bg-white text-ink hover:bg-mint">
+        <Button onClick={onDemo} isLoading={loading} loadingLabel="Loading demo..." className="bg-white text-ink hover:bg-mint">
           Try Demo Account
           <ArrowRight className="h-4 w-4" aria-hidden="true" />
         </Button>
@@ -17,4 +17,3 @@ export function TryDemoSection({ onDemo, loading }: { onDemo: () => void; loadin
     </section>
   );
 }
-

@@ -4,8 +4,10 @@ import { ActionPlanWidget } from "../components/dashboard/ActionPlanWidget";
 import { CarbonTwinProjectionChart } from "../components/dashboard/CarbonTwinProjectionChart";
 import { CategoryBreakdownChart } from "../components/dashboard/CategoryBreakdownChart";
 import { MonthlyTrendChart } from "../components/dashboard/MonthlyTrendChart";
+import { PlanProgressCard } from "../components/dashboard/PlanProgressCard";
 import { RecentActivityList } from "../components/dashboard/RecentActivityList";
 import { SummaryMetric } from "../components/dashboard/SummaryMetric";
+import { FutureYouSection } from "../components/dashboard/FutureYouSection";
 import { BadgePill } from "../components/ui/BadgePill";
 import { Card } from "../components/ui/Card";
 import { ErrorState } from "../components/ui/ErrorState";
@@ -28,9 +30,14 @@ export function DashboardPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-black text-ink">Dashboard</h1>
-        <p className="mt-1 text-sm text-slate-600">Your footprint, explanations, progress, and next best actions.</p>
+        <p className="mt-1 text-sm text-slate-600">Where you are now, what to do next, progress made, and the future impact you can create.</p>
       </div>
 
+      <section className="space-y-4" aria-labelledby="where-now">
+        <div>
+          <h2 id="where-now" className="text-xl font-black text-ink">Where am I now?</h2>
+          <p className="text-sm text-slate-600">Your current footprint and the Carbon Twin signal behind it.</p>
+        </div>
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
         <SummaryMetric {...dashboard.widgets.monthlyFootprint} icon={<Activity className="h-5 w-5" aria-hidden="true" />} />
         <SummaryMetric {...dashboard.widgets.baselineComparison} icon={<TrendingDown className="h-5 w-5" aria-hidden="true" />} />
@@ -44,17 +51,37 @@ export function DashboardPage() {
         />
         <SummaryMetric {...dashboard.widgets.estimatedSavings} icon={<Target className="h-5 w-5" aria-hidden="true" />} />
       </div>
+      </section>
 
-      <div className="grid gap-6 xl:grid-cols-2">
-        <CategoryBreakdownChart data={dashboard.charts.categoryBreakdown} />
-        <MonthlyTrendChart {...dashboard.charts.monthlyTrend} />
-      </div>
+      <section className="space-y-4" aria-labelledby="next-action">
+        <div>
+          <h2 id="next-action" className="text-xl font-black text-ink">What should I do next?</h2>
+          <p className="text-sm text-slate-600">Make the 30-day plan visible and keep the next action obvious.</p>
+        </div>
+        <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
+          <PlanProgressCard {...dashboard.widgets.planProgress} />
+          <ActionPlanWidget plan={dashboard.actionPlanPreview} />
+        </div>
+      </section>
 
-      <div className="grid gap-6 xl:grid-cols-2">
+      <section className="space-y-4" aria-labelledby="future-impact">
+        <div>
+          <h2 id="future-impact" className="text-xl font-black text-ink">What future impact can I create?</h2>
+          <p className="text-sm text-slate-600">Future You compares today’s emissions with the projected lower-emissions path.</p>
+        </div>
+        <FutureYouSection {...dashboard.futureYou} />
         <CarbonTwinProjectionChart {...dashboard.charts.carbonTwinProjection} />
-        <ActionPlanWidget plan={dashboard.actionPlanPreview} />
-      </div>
+      </section>
 
+      <section className="space-y-4" aria-labelledby="progress-made">
+        <div>
+          <h2 id="progress-made" className="text-xl font-black text-ink">What progress have I made?</h2>
+          <p className="text-sm text-slate-600">Your trends, challenges, badges, and recent activity.</p>
+        </div>
+        <div className="grid gap-6 xl:grid-cols-2">
+          <CategoryBreakdownChart data={dashboard.charts.categoryBreakdown} />
+          <MonthlyTrendChart {...dashboard.charts.monthlyTrend} />
+        </div>
       <div className="grid gap-6 xl:grid-cols-3">
         <Card>
           <h2 className="text-lg font-bold text-ink">Top Recommendations</h2>
@@ -99,7 +126,7 @@ export function DashboardPage() {
       </div>
 
       <RecentActivityList entries={dashboard.recentActivity} />
+      </section>
     </div>
   );
 }
-

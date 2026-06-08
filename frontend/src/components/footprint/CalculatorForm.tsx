@@ -17,13 +17,15 @@ export type CalculatorPayload = {
 export function CalculatorForm({
   categories,
   estimate,
-  isLoading,
+  isCalculating,
+  isSaving,
   onCalculate,
   onSave
 }: {
   categories: EmissionCategory[];
   estimate?: { kgCo2e: number; unit: string };
-  isLoading: boolean;
+  isCalculating: boolean;
+  isSaving: boolean;
   onCalculate: (payload: CalculatorPayload) => Promise<void>;
   onSave: (payload: CalculatorPayload) => Promise<void>;
 }) {
@@ -103,10 +105,10 @@ export function CalculatorForm({
           </div>
         ) : null}
         <div className="flex flex-col gap-3 sm:flex-row md:col-span-2">
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit" isLoading={isCalculating} loadingLabel="Calculating..." disabled={isSaving}>
             Calculate
           </Button>
-          <Button type="button" variant="secondary" onClick={handleSave} disabled={isLoading}>
+          <Button type="button" variant="secondary" isLoading={isSaving} loadingLabel="Saving..." onClick={handleSave} disabled={isCalculating}>
             Save Entry
           </Button>
         </div>
@@ -114,4 +116,3 @@ export function CalculatorForm({
     </Card>
   );
 }
-

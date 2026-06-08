@@ -5,10 +5,12 @@ import { Card } from "../components/ui/Card";
 import { ErrorState } from "../components/ui/ErrorState";
 import { Input } from "../components/ui/Input";
 import { useAuthStore } from "../stores/authStore";
+import { useToastStore } from "../stores/toastStore";
 
 export function RegisterPage() {
   const register = useAuthStore((state) => state.register);
   const isLoading = useAuthStore((state) => state.isLoading);
+  const showToast = useToastStore((state) => state.showToast);
   const navigate = useNavigate();
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState("");
@@ -20,9 +22,11 @@ export function RegisterPage() {
     try {
       setError("");
       await register(email, password, displayName);
+      showToast("Account Created");
       navigate("/onboarding");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Registration failed");
+      showToast("Something Went Wrong", "error");
     }
   }
 
@@ -36,7 +40,7 @@ export function RegisterPage() {
           <Input label="Display name" value={displayName} onChange={(event) => setDisplayName(event.target.value)} required minLength={2} />
           <Input label="Email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} required />
           <Input label="Password" type="password" value={password} onChange={(event) => setPassword(event.target.value)} required minLength={8} />
-          <Button className="w-full" type="submit" disabled={isLoading}>Create Account</Button>
+          <Button className="w-full" type="submit" isLoading={isLoading} loadingLabel="Creating...">Create Account</Button>
         </form>
         <p className="mt-5 text-center text-sm text-slate-600">
           Already registered? <Link className="font-bold text-forest" to="/login">Log in</Link>
@@ -45,4 +49,3 @@ export function RegisterPage() {
     </main>
   );
 }
-

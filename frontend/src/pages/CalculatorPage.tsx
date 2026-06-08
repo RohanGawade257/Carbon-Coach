@@ -6,9 +6,11 @@ import { ErrorState } from "../components/ui/ErrorState";
 import { LoadingState } from "../components/ui/LoadingState";
 import { apiRequest } from "../lib/apiClient";
 import { ApiShapes } from "../types/api";
+import { useToastStore } from "../stores/toastStore";
 
 export function CalculatorPage() {
   const queryClient = useQueryClient();
+  const showToast = useToastStore((state) => state.showToast);
   const [estimate, setEstimate] = useState<{ kgCo2e: number; unit: string } | undefined>();
   const [error, setError] = useState("");
 
@@ -31,9 +33,12 @@ export function CalculatorPage() {
           activityType: payload.activityType,
           quantity: payload.quantity
         }
-      }),
+    }),
     onSuccess: (data) => setEstimate({ kgCo2e: data.kgCo2e, unit: data.factor.unit }),
-    onError: (caught) => setError(caught instanceof Error ? caught.message : "Calculation failed")
+    onError: (caught) => {
+      setError(caught instanceof Error ? caught.message : "Calculation failed");
+      showToast("Something Went Wrong", "error");
+    }
   });
 
   const createMutation = useMutation({
@@ -44,8 +49,12 @@ export function CalculatorPage() {
         queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
         queryClient.invalidateQueries({ queryKey: ["carbonTwin"] })
       ]);
+      showToast("Footprint Entry Saved");
     },
-    onError: (caught) => setError(caught instanceof Error ? caught.message : "Save failed")
+    onError: (caught) => {
+      setError(caught instanceof Error ? caught.message : "Save failed");
+      showToast("Something Went Wrong", "error");
+    }
   });
 
   const deleteMutation = useMutation({
@@ -53,7 +62,9 @@ export function CalculatorPage() {
     onSuccess: async () => {
       await queryClient.invalidateQueries({ queryKey: ["footprintEntries"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-    }
+      showToast("Footprint Entry Deleted");
+    },
+    onError: () => showToast("Something Went Wrong", "error")
   });
 
   if (categoriesQuery.isLoading || entriesQuery.isLoading) return <LoadingState message="Loading calculator" />;
@@ -69,7 +80,8 @@ export function CalculatorPage() {
       <CalculatorForm
         categories={categoriesQuery.data!.categories}
         estimate={estimate}
-        isLoading={calculateMutation.isPending || createMutation.isPending}
+        isCalculating={calculateMutation.isPending}
+        isSaving={createMutation.isPending}
         onCalculate={async (payload) => calculateMutation.mutateAsync(payload).then(() => undefined)}
         onSave={async (payload) => createMutation.mutateAsync(payload).then(() => undefined)}
       />
@@ -77,4 +89,3 @@ export function CalculatorPage() {
     </div>
   );
 }
-

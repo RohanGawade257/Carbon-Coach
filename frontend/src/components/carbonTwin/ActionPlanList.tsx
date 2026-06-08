@@ -6,9 +6,11 @@ import { BadgePill } from "../ui/BadgePill";
 
 export function ActionPlanList({
   plan,
+  updatingItemId,
   onUpdateItem
 }: {
   plan: ActionPlan | null;
+  updatingItemId?: string;
   onUpdateItem: (id: string, status: "Pending" | "Completed") => Promise<void>;
 }) {
   return (
@@ -34,6 +36,8 @@ export function ActionPlanList({
             </div>
             <Button
               variant={item.status === "Completed" ? "secondary" : "primary"}
+              isLoading={updatingItemId === item.id}
+              loadingLabel="Saving..."
               onClick={() => onUpdateItem(item.id, item.status === "Completed" ? "Pending" : "Completed")}
               aria-label={`Mark day ${item.dayNumber} ${item.status === "Completed" ? "pending" : "completed"}`}
             >
@@ -45,4 +49,3 @@ export function ActionPlanList({
     </Card>
   );
 }
-

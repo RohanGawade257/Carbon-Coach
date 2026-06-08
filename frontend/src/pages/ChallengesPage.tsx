@@ -4,9 +4,11 @@ import { ErrorState } from "../components/ui/ErrorState";
 import { LoadingState } from "../components/ui/LoadingState";
 import { apiRequest } from "../lib/apiClient";
 import { ApiShapes } from "../types/api";
+import { useToastStore } from "../stores/toastStore";
 
 export function ChallengesPage() {
   const queryClient = useQueryClient();
+  const showToast = useToastStore((state) => state.showToast);
   const query = useQuery({
     queryKey: ["challenges"],
     queryFn: () => apiRequest<ApiShapes["challenges"]>("/challenges")
@@ -18,17 +20,21 @@ export function ChallengesPage() {
       await queryClient.invalidateQueries({ queryKey: ["challenges"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       await queryClient.invalidateQueries({ queryKey: ["badges"] });
-    }
+      showToast("Challenge Joined");
+    },
+    onError: () => showToast("Something Went Wrong", "error")
   });
 
   const progressMutation = useMutation({
     mutationFn: ({ id, progressValue, status }: { id: string; progressValue: number; status?: "Joined" | "Completed" }) =>
       apiRequest(`/user-challenges/${id}`, { method: "PATCH", body: { progressValue, status } }),
-    onSuccess: async () => {
+    onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({ queryKey: ["challenges"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       await queryClient.invalidateQueries({ queryKey: ["badges"] });
-    }
+      showToast(variables.status === "Completed" ? "Challenge Completed" : "Challenge Progress Updated");
+    },
+    onError: () => showToast("Something Went Wrong", "error")
   });
 
   if (query.isLoading) return <LoadingState message="Loading challenges" />;
@@ -46,6 +52,8 @@ export function ChallengesPage() {
           <ChallengeCard
             key={challenge.id}
             challenge={challenge}
+            isJoining={joinMutation.isPending && joinMutation.variables === challenge.id}
+            updatingChallengeId={progressMutation.isPending ? progressMutation.variables?.id : undefined}
             onJoin={(id) => joinMutation.mutateAsync(id).then(() => undefined)}
             onProgress={(id, progressValue, status) => progressMutation.mutateAsync({ id, progressValue, status }).then(() => undefined)}
           />
@@ -54,4 +62,3 @@ export function ChallengesPage() {
     </div>
   );
 }
-

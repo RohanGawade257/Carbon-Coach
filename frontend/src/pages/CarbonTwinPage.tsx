@@ -7,44 +7,58 @@ import { Button } from "../components/ui/Button";
 import { ErrorState } from "../components/ui/ErrorState";
 import { LoadingState } from "../components/ui/LoadingState";
 import { apiRequest } from "../lib/apiClient";
-import { ApiShapes } from "../types/api";
+import { ApiShapes, LocalInsightsMeta } from "../types/api";
+import { useToastStore } from "../stores/toastStore";
 
 export function CarbonTwinPage() {
   const queryClient = useQueryClient();
+  const showToast = useToastStore((state) => state.showToast);
   const query = useQuery({
     queryKey: ["carbonTwin"],
     queryFn: () => apiRequest<ApiShapes["carbonTwin"]>("/carbon-twin")
   });
 
   const buildMutation = useMutation({
-    mutationFn: () => apiRequest("/carbon-twin/build", { method: "POST" }),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["carbonTwin"] })
+    mutationFn: () => apiRequest<{ twin: unknown } & LocalInsightsMeta>("/carbon-twin/build", { method: "POST" }),
+    onSuccess: async (data) => {
+      await queryClient.invalidateQueries({ queryKey: ["carbonTwin"] });
+      await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
+      showToast(data.usedLocalInsights ? "Using local sustainability insights" : "Carbon Twin Updated");
+    },
+    onError: () => showToast("Something Went Wrong", "error")
   });
 
   const simulateMutation = useMutation({
-    mutationFn: (payload: { days: number; assumptions: Record<string, unknown> }) => apiRequest("/carbon-twin/simulate", { method: "POST", body: payload }),
-    onSuccess: async () => {
+    mutationFn: (payload: { days: number; assumptions: Record<string, unknown> }) =>
+      apiRequest<{ simulation: unknown } & LocalInsightsMeta>("/carbon-twin/simulate", { method: "POST", body: payload }),
+    onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ["carbonTwin"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-    }
+      showToast(data.usedLocalInsights ? "Using local sustainability insights" : "Simulation Generated");
+    },
+    onError: () => showToast("Something Went Wrong", "error")
   });
 
   const planMutation = useMutation({
-    mutationFn: () => apiRequest<ApiShapes["actionPlan"]>("/carbon-twin/action-plan", { method: "POST" }),
-    onSuccess: async () => {
+    mutationFn: () => apiRequest<ApiShapes["actionPlan"] & LocalInsightsMeta>("/carbon-twin/action-plan", { method: "POST" }),
+    onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ["carbonTwin"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-    }
+      showToast(data.usedLocalInsights ? "Using local sustainability insights" : "Plan Ready");
+    },
+    onError: () => showToast("Something Went Wrong", "error")
   });
 
   const itemMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: "Pending" | "Completed" }) =>
       apiRequest(`/action-plan/items/${id}`, { method: "PATCH", body: { status } }),
-    onSuccess: async () => {
+    onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({ queryKey: ["carbonTwin"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       await queryClient.invalidateQueries({ queryKey: ["badges"] });
-    }
+      showToast(variables.status === "Completed" ? "Action Item Completed" : "Action Item Updated");
+    },
+    onError: () => showToast("Something Went Wrong", "error")
   });
 
   if (query.isLoading) return <LoadingState message="Loading Carbon Twin" />;
@@ -60,8 +74,12 @@ export function CarbonTwinPage() {
           <p className="mt-1 text-sm text-slate-600">A simple personal model for your top source, opportunity, goal, and constraints.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" onClick={() => buildMutation.mutate()} disabled={buildMutation.isPending}>Rebuild Twin</Button>
-          <Button onClick={() => planMutation.mutate()} disabled={planMutation.isPending}>Generate 30-Day Plan</Button>
+          <Button variant="secondary" isLoading={buildMutation.isPending} loadingLabel="Building..." onClick={() => buildMutation.mutate()}>
+            Rebuild Twin
+          </Button>
+          <Button isLoading={planMutation.isPending} loadingLabel="Generating..." onClick={() => planMutation.mutate()}>
+            Generate 30-Day Plan
+          </Button>
         </div>
       </div>
       {(buildMutation.error || simulateMutation.error || planMutation.error || itemMutation.error) ? (
@@ -72,8 +90,11 @@ export function CarbonTwinPage() {
         <SimulationControls isLoading={simulateMutation.isPending} onSimulate={(payload) => simulateMutation.mutateAsync(payload).then(() => undefined)} />
         <SimulationChart simulations={data.simulations} />
       </div>
-      <ActionPlanList plan={data.latestPlan} onUpdateItem={(id, status) => itemMutation.mutateAsync({ id, status }).then(() => undefined)} />
+      <ActionPlanList
+        plan={data.latestPlan}
+        updatingItemId={itemMutation.isPending ? itemMutation.variables?.id : undefined}
+        onUpdateItem={(id, status) => itemMutation.mutateAsync({ id, status }).then(() => undefined)}
+      />
     </div>
   );
 }
-

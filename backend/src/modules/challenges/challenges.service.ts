@@ -2,6 +2,10 @@ import { prisma } from "../../config/prisma";
 import { AppError } from "../../shared/errors/AppError";
 import { badgesService } from "../badges/badges.service";
 
+function isUniqueConstraintError(error: unknown) {
+  return typeof error === "object" && error !== null && "code" in error && error.code === "P2002";
+}
+
 export const challengesService = {
   async list(userId: string) {
     return prisma.challenge.findMany({
@@ -21,25 +25,42 @@ export const challengesService = {
       throw new AppError("Challenge not found", 404, "CHALLENGE_NOT_FOUND");
     }
 
-    const userChallenge = await prisma.userChallenge.upsert({
-      where: {
-        userId_challengeId: {
-          userId,
-          challengeId
-        }
-      },
-      update: {},
-      create: {
+    const where = {
+      userId_challengeId: {
         userId,
-        challengeId,
-        status: "Joined",
-        progressValue: 0
-      },
+        challengeId
+      }
+    };
+
+    const existing = await prisma.userChallenge.findUnique({
+      where,
       include: { challenge: { include: { category: true } } }
     });
+    if (existing) return existing;
 
-    await badgesService.evaluateForUser(userId);
-    return userChallenge;
+    try {
+      const userChallenge = await prisma.userChallenge.create({
+        data: {
+          userId,
+          challengeId,
+          status: "Joined",
+          progressValue: 0
+        },
+        include: { challenge: { include: { category: true } } }
+      });
+
+      await badgesService.evaluateForUser(userId);
+      return userChallenge;
+    } catch (error) {
+      if (isUniqueConstraintError(error)) {
+        const joined = await prisma.userChallenge.findUnique({
+          where,
+          include: { challenge: { include: { category: true } } }
+        });
+        if (joined) return joined;
+      }
+      throw error;
+    }
   },
 
   async update(
@@ -76,4 +97,3 @@ export const challengesService = {
     return updated;
   }
 };
-

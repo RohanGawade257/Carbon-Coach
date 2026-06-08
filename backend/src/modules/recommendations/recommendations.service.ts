@@ -3,7 +3,7 @@ import { AppError } from "../../shared/errors/AppError";
 import { fallbackRecommendations } from "../ai/aiFallbacks";
 import { recommendationListAiSchema } from "../ai/aiResponse.schemas";
 import { promptTemplates } from "../ai/promptTemplates";
-import { generateStructuredAi } from "../ai/structuredAi.service";
+import { generateStructuredAiResult } from "../ai/structuredAi.service";
 import { buildTwinContext } from "../carbonTwin/twinContext.builder";
 import { badgesService } from "../badges/badges.service";
 
@@ -39,11 +39,12 @@ export const recommendationsService = {
     const twin = await prisma.carbonTwinProfile.findUnique({ where: { userId } });
     const topCategory = twin?.topEmissionSource ?? "Transport";
     const context = await buildTwinContext(userId);
-    const recommendations = await generateStructuredAi(
+    const recommendationResult = await generateStructuredAiResult(
       promptTemplates.RECOMMENDATION_GENERATION_PROMPT(context),
       recommendationListAiSchema,
       fallbackRecommendations(topCategory)
     );
+    const recommendations = recommendationResult.data;
 
     const created = [];
     for (const recommendation of recommendations) {
@@ -65,7 +66,7 @@ export const recommendationsService = {
       );
     }
 
-    return created;
+    return { recommendations: created, usedLocalInsights: recommendationResult.usedFallback };
   },
 
   async update(userId: string, id: string, status: "New" | "Accepted" | "Dismissed" | "Completed") {
@@ -90,4 +91,3 @@ export const recommendationsService = {
     return updated;
   }
 };
-

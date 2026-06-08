@@ -9,6 +9,7 @@ import { Select } from "../components/ui/Select";
 import { Textarea } from "../components/ui/Textarea";
 import { apiRequest } from "../lib/apiClient";
 import { ApiShapes } from "../types/api";
+import { useToastStore } from "../stores/toastStore";
 
 const initialForm = {
   country: "",
@@ -22,6 +23,7 @@ const initialForm = {
 
 export function ProfilePage() {
   const queryClient = useQueryClient();
+  const showToast = useToastStore((state) => state.showToast);
   const [form, setForm] = useState(initialForm);
 
   const query = useQuery({
@@ -53,7 +55,9 @@ export function ProfilePage() {
       await queryClient.invalidateQueries({ queryKey: ["profile"] });
       await queryClient.invalidateQueries({ queryKey: ["carbonTwin"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-    }
+      showToast("Profile Saved");
+    },
+    onError: () => showToast("Something Went Wrong", "error")
   });
 
   function update(field: keyof typeof form, value: string) {
@@ -88,11 +92,10 @@ export function ProfilePage() {
             <Textarea label="Your goal" rows={3} value={form.goalReason} onChange={(event) => update("goalReason", event.target.value)} required />
           </div>
           <div className="sm:col-span-2">
-            <Button type="submit" disabled={mutation.isPending}>{mutation.isPending ? "Saving..." : "Save Profile"}</Button>
+            <Button type="submit" isLoading={mutation.isPending} loadingLabel="Saving...">Save Profile</Button>
           </div>
         </form>
       </Card>
     </div>
   );
 }
-

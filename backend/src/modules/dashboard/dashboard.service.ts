@@ -64,7 +64,7 @@ export const dashboardService = {
       prisma.actionPlan.findFirst({
         where: { userId, status: "Active" },
         orderBy: { createdAt: "desc" },
-        include: { items: { orderBy: { dayNumber: "asc" }, take: 5 } }
+        include: { items: { orderBy: { dayNumber: "asc" } } }
       }),
       prisma.recommendation.findMany({
         where: { userId },
@@ -121,14 +121,31 @@ export const dashboardService = {
     }));
 
     const projectedBaseline = latestSimulation ? roundCarbon((baseline / 30) * latestSimulation.days) : baseline;
+    const projectedEmissions = latestSimulation ? Number(latestSimulation.projectedKgCo2e) : roundCarbon(projectedBaseline * 0.85);
+    const estimatedReductionKg = latestSimulation ? Number(latestSimulation.estimatedSavingsKgCo2e) : roundCarbon(projectedBaseline - projectedEmissions);
+    const estimatedReductionPercent = projectedBaseline > 0 ? roundCarbon((estimatedReductionKg / projectedBaseline) * 100) : 0;
     const projection = [
       { label: "Today", baseline: currentTotal, actionPlan: currentTotal },
       {
         label: latestSimulation ? `${latestSimulation.days} days` : "30 days",
         baseline: projectedBaseline,
-        actionPlan: latestSimulation ? Number(latestSimulation.projectedKgCo2e) : roundCarbon(projectedBaseline * 0.85)
+        actionPlan: projectedEmissions
       }
     ];
+    const actionItems = actionPlan?.items ?? [];
+    const totalDays = actionItems.length;
+    const completedDays = actionItems.filter((item) => item.status === "Completed").length;
+    const remainingDays = Math.max(0, totalDays - completedDays);
+    const completionPercentage = totalDays > 0 ? roundCarbon((completedDays / totalDays) * 100) : 0;
+    const completedEstimatedSavings = roundCarbon(
+      actionItems
+        .filter((item) => item.status === "Completed")
+        .reduce((sum, item) => sum + Number(item.estimatedSavingsKgCo2e), 0)
+    );
+    const totalEstimatedSavings = roundCarbon(
+      actionItems.reduce((sum, item) => sum + Number(item.estimatedSavingsKgCo2e), 0)
+    );
+    const projectedReductionPercent = baseline > 0 ? roundCarbon((totalEstimatedSavings / baseline) * 100) : estimatedReductionPercent;
 
     return {
       widgets: {
@@ -158,7 +175,34 @@ export const dashboardService = {
           value: latestSimulation ? Number(latestSimulation.estimatedSavingsKgCo2e) : 0,
           unit: "kg CO2e",
           ...insightService.savings(latestSimulation ? Number(latestSimulation.estimatedSavingsKgCo2e) : 0)
+        },
+        planProgress: {
+          title: "30-Day Plan Progress",
+          completedDays,
+          totalDays,
+          remainingDays,
+          completionPercentage,
+          completedEstimatedSavings,
+          totalEstimatedSavings,
+          projectedReductionPercent,
+          explanation:
+            totalDays > 0
+              ? `${completedDays} of ${totalDays} action-plan days are complete. Completed actions represent about ${completedEstimatedSavings.toFixed(1)} kg CO2e of planned savings.`
+              : "Generate a 30-day action plan to track daily reduction progress.",
+          recommendationHint:
+            remainingDays > 0
+              ? `Complete the next action to keep progress moving. ${remainingDays} days remain.`
+              : "Your current action plan is complete. Generate a new plan when you are ready."
         }
+      },
+      futureYou: {
+        currentEmissions: currentTotal,
+        projectedEmissions,
+        estimatedReductionKg,
+        estimatedReductionPercent,
+        timeframeDays: latestSimulation?.days ?? 30,
+        explanation: `Future You compares today's ${currentTotal.toFixed(1)} kg CO2e footprint with a projected ${projectedEmissions.toFixed(1)} kg CO2e path if you follow the current plan.`,
+        recommendationHint: "Use the next action-plan item to turn the lower projection into real progress."
       },
       charts: {
         categoryBreakdown: breakdown,
@@ -180,4 +224,3 @@ export const dashboardService = {
     };
   }
 };
-

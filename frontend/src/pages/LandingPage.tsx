@@ -9,10 +9,12 @@ import { ProblemSection } from "../components/landing/ProblemSection";
 import { TryDemoSection } from "../components/landing/TryDemoSection";
 import { ErrorState } from "../components/ui/ErrorState";
 import { useAuthStore } from "../stores/authStore";
+import { useToastStore } from "../stores/toastStore";
 
 export function LandingPage() {
   const demoLogin = useAuthStore((state) => state.demoLogin);
   const isLoading = useAuthStore((state) => state.isLoading);
+  const showToast = useToastStore((state) => state.showToast);
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
@@ -20,9 +22,11 @@ export function LandingPage() {
     try {
       setError("");
       await demoLogin();
+      showToast("Demo Account Loaded");
       navigate("/dashboard");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Demo mode failed to start");
+      showToast("Something Went Wrong", "error");
     }
   }
 
@@ -43,4 +47,3 @@ export function LandingPage() {
     </div>
   );
 }
-

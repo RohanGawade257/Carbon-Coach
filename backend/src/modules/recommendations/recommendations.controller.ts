@@ -9,8 +9,8 @@ export const recommendationsController = {
   },
 
   async generate(req: AuthenticatedRequest, res: Response) {
-    const recommendations = await recommendationsService.generate(req.user.id);
-    res.status(201).json({ recommendations });
+    const result = await recommendationsService.generate(req.user.id);
+    res.status(201).json({ recommendations: result.recommendations, usedLocalInsights: result.usedLocalInsights });
   },
 
   async update(req: AuthenticatedRequest, res: Response) {

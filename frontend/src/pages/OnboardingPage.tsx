@@ -8,9 +8,11 @@ import { Input } from "../components/ui/Input";
 import { Select } from "../components/ui/Select";
 import { Textarea } from "../components/ui/Textarea";
 import { apiRequest } from "../lib/apiClient";
+import { useToastStore } from "../stores/toastStore";
 
 export function OnboardingPage() {
   const navigate = useNavigate();
+  const showToast = useToastStore((state) => state.showToast);
   const [form, setForm] = useState({
     country: "United States",
     householdSize: "2",
@@ -29,7 +31,11 @@ export function OnboardingPage() {
       });
       await apiRequest("/carbon-twin/build", { method: "POST" });
     },
-    onSuccess: () => navigate("/dashboard")
+    onSuccess: () => {
+      showToast("Carbon Twin Updated");
+      navigate("/dashboard");
+    },
+    onError: () => showToast("Something Went Wrong", "error")
   });
 
   function update(field: keyof typeof form, value: string) {
@@ -59,7 +65,7 @@ export function OnboardingPage() {
               <Textarea label="Your goal" rows={3} value={form.goalReason} onChange={(event) => update("goalReason", event.target.value)} required />
             </div>
             <div className="sm:col-span-2">
-              <Button type="submit" disabled={mutation.isPending}>{mutation.isPending ? "Building..." : "Save and Build Carbon Twin"}</Button>
+              <Button type="submit" isLoading={mutation.isPending} loadingLabel="Building...">Save and Build Carbon Twin</Button>
             </div>
           </form>
         </Card>
@@ -67,4 +73,3 @@ export function OnboardingPage() {
     </main>
   );
 }
-

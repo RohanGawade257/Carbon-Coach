@@ -6,15 +6,20 @@ import { Card } from "../ui/Card";
 
 export function ChallengeCard({
   challenge,
+  isJoining,
+  updatingChallengeId,
   onJoin,
   onProgress
 }: {
   challenge: Challenge;
+  isJoining?: boolean;
+  updatingChallengeId?: string;
   onJoin: (id: string) => Promise<void>;
   onProgress: (userChallengeId: string, progressValue: number, status?: "Joined" | "Completed") => Promise<void>;
 }) {
   const userChallenge = challenge.userChallenges[0];
   const progress = userChallenge?.progressValue ?? 0;
+  const isUpdating = Boolean(userChallenge && updatingChallengeId === userChallenge.id);
 
   return (
     <Card className="space-y-4">
@@ -39,16 +44,26 @@ export function ChallengeCard({
             <div className="h-3 rounded-full bg-forest" style={{ width: `${progress}%` }} />
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" onClick={() => onProgress(userChallenge.id, Math.min(100, progress + 25))}>
+            <Button variant="secondary" isLoading={isUpdating} loadingLabel="Updating..." onClick={() => onProgress(userChallenge.id, Math.min(100, progress + 25))}>
               Add Progress
             </Button>
-            <Button onClick={() => onProgress(userChallenge.id, 100, "Completed")}>Mark Complete</Button>
+            <Button
+              isLoading={isUpdating}
+              loadingLabel="Updating..."
+              feedbackState={userChallenge.status === "Completed" ? "success" : "idle"}
+              successLabel="Completed"
+              disabled={userChallenge.status === "Completed"}
+              onClick={() => onProgress(userChallenge.id, 100, "Completed")}
+            >
+              Mark Complete
+            </Button>
           </div>
         </div>
       ) : (
-        <Button onClick={() => onJoin(challenge.id)}>Join Challenge</Button>
+        <Button isLoading={isJoining} loadingLabel="Joining..." onClick={() => onJoin(challenge.id)}>
+          Join Challenge
+        </Button>
       )}
     </Card>
   );
 }
-

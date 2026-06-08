@@ -4,31 +4,37 @@ import { Button } from "../components/ui/Button";
 import { ErrorState } from "../components/ui/ErrorState";
 import { LoadingState } from "../components/ui/LoadingState";
 import { apiRequest } from "../lib/apiClient";
-import { ApiShapes } from "../types/api";
+import { ApiShapes, LocalInsightsMeta } from "../types/api";
 import { Recommendation } from "../types/domain";
+import { useToastStore } from "../stores/toastStore";
 
 export function RecommendationsPage() {
   const queryClient = useQueryClient();
+  const showToast = useToastStore((state) => state.showToast);
   const query = useQuery({
     queryKey: ["recommendations"],
     queryFn: () => apiRequest<ApiShapes["recommendations"]>("/recommendations")
   });
 
   const generateMutation = useMutation({
-    mutationFn: () => apiRequest<ApiShapes["recommendations"]>("/recommendations/generate", { method: "POST" }),
-    onSuccess: async () => {
+    mutationFn: () => apiRequest<ApiShapes["recommendations"] & LocalInsightsMeta>("/recommendations/generate", { method: "POST" }),
+    onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ["recommendations"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-    }
+      showToast(data.usedLocalInsights ? "Using local sustainability insights" : "Recommendations Generated");
+    },
+    onError: () => showToast("Something Went Wrong", "error")
   });
 
   const updateMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: Recommendation["status"] }) => apiRequest(`/recommendations/${id}`, { method: "PATCH", body: { status } }),
-    onSuccess: async () => {
+    onSuccess: async (_data, variables) => {
       await queryClient.invalidateQueries({ queryKey: ["recommendations"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       await queryClient.invalidateQueries({ queryKey: ["badges"] });
-    }
+      showToast(variables.status === "Completed" ? "Recommendation Completed" : "Recommendation Updated");
+    },
+    onError: () => showToast("Something Went Wrong", "error")
   });
 
   if (query.isLoading) return <LoadingState message="Loading recommendations" />;
@@ -41,7 +47,9 @@ export function RecommendationsPage() {
           <h1 className="text-3xl font-black text-ink">Recommendations</h1>
           <p className="mt-1 text-sm text-slate-600">Structured AI recommendations validated before saving.</p>
         </div>
-        <Button onClick={() => generateMutation.mutate()} disabled={generateMutation.isPending}>Generate Recommendations</Button>
+        <Button isLoading={generateMutation.isPending} loadingLabel="Generating..." onClick={() => generateMutation.mutate()}>
+          Generate Recommendations
+        </Button>
       </div>
       {generateMutation.error || updateMutation.error ? <ErrorState message="Recommendation action failed." /> : null}
       <div className="grid gap-4 xl:grid-cols-2">
@@ -49,6 +57,7 @@ export function RecommendationsPage() {
           <RecommendationCard
             key={recommendation.id}
             recommendation={recommendation}
+            isUpdating={updateMutation.isPending && updateMutation.variables?.id === recommendation.id}
             onUpdate={(id, status) => updateMutation.mutateAsync({ id, status }).then(() => undefined)}
           />
         ))}
@@ -57,4 +66,3 @@ export function RecommendationsPage() {
     </div>
   );
 }
-

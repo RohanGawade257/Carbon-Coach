@@ -5,19 +5,29 @@ async function award(userId: string, ruleKey: string) {
   const badge = await prisma.badge.findUnique({ where: { ruleKey } });
   if (!badge) return null;
 
-  return prisma.userBadge.upsert({
-    where: {
-      userId_badgeId: {
-        userId,
-        badgeId: badge.id
-      }
-    },
-    update: {},
-    create: {
+  const where = {
+    userId_badgeId: {
       userId,
       badgeId: badge.id
     }
-  });
+  };
+
+  const existing = await prisma.userBadge.findUnique({ where });
+  if (existing) return existing;
+
+  try {
+    return await prisma.userBadge.create({
+      data: {
+        userId,
+        badgeId: badge.id
+      }
+    });
+  } catch (error) {
+    if (typeof error === "object" && error !== null && "code" in error && error.code === "P2002") {
+      return prisma.userBadge.findUnique({ where });
+    }
+    throw error;
+  }
 }
 
 export const badgesService = {
@@ -65,4 +75,3 @@ export const badgesService = {
     }
   }
 };
-

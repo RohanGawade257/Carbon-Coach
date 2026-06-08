@@ -71,7 +71,7 @@ export const aiService = {
 
     const aiText =
       (await generateGeminiText(prompt)) ??
-      "Your Carbon Twin suggests starting with your largest logged category. Choose one small action today, track it, and compare your dashboard after a week.";
+      "Using local sustainability insights: Your Carbon Twin suggests starting with your largest logged category. Choose one small action today, track it, and compare your dashboard after a week.";
 
     const assistantMessage = await prisma.aiMessage.create({
       data: {
@@ -90,4 +90,3 @@ export const aiService = {
     return assistantMessage;
   }
 };
-
