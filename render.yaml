@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: carbon-coach-api
+    runtime: node
+    rootDir: backend
+    buildCommand: npm install --include=dev && npx prisma generate && npm run build
+    startCommand: npx prisma migrate deploy && npm run db:seed && npm run start
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-1.5-flash
+      - key: FRONTEND_ORIGIN
+        sync: false
+      - key: NODE_ENV
+        value: production
