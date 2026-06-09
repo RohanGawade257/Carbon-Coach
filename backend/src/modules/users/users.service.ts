@@ -23,6 +23,68 @@ export const usersService = {
       hasProfile: Boolean(user.profile),
       isDemo: user.email === "demo@carboncoach.local"
     };
+  },
+
+  async updateUserCarbonScore(userId: string) {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      include: {
+        footprintEntries: true,
+        userChallenges: { where: { status: "Completed" } },
+        actionPlans: {
+          include: {
+            items: { where: { status: "Completed" } }
+          }
+        }
+      }
+    });
+
+    if (!user) return;
+
+    const entryCount = user.footprintEntries.length;
+    const completedChallengesCount = user.userChallenges.length;
+    const completedActionItemsCount = user.actionPlans.reduce(
+      (sum, plan) => sum + plan.items.length,
+      0
+    );
+    const streakBonus = user.currentStreak * 50;
+
+    const newScore = (entryCount * 10) + (completedChallengesCount * 200) + (completedActionItemsCount * 100) + streakBonus;
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { carbonScore: newScore }
+    });
+  },
+
+  async getLeaderboard(userId: string) {
+    const users = await prisma.user.findMany({
+      orderBy: { carbonScore: "desc" },
+      select: {
+        id: true,
+        displayName: true,
+        currentStreak: true,
+        carbonScore: true,
+        email: true,
+        _count: {
+          select: { footprintEntries: true }
+        }
+      },
+      take: 50
+    });
+
+    return users.map((user, idx) => ({
+      rank: idx + 1,
+      id: user.id,
+      displayName: user.displayName,
+      currentStreak: user.currentStreak,
+      carbonScore: user.carbonScore,
+      entriesCount: user._count.footprintEntries,
+      isCurrentUser: user.id === userId,
+      avatarSeed: user.displayName.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2)
+    }));
   }
 };
+
+
 

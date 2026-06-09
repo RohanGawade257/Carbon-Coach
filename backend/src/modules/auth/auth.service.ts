@@ -3,15 +3,28 @@ import { AppError } from "../../shared/errors/AppError";
 import { hashPassword, verifyPassword } from "../../shared/utils/password";
 import { signToken } from "../../shared/utils/jwt";
 
-function serializeUser(user: { id: string; email: string; displayName: string; profile?: unknown | null }) {
+function serializeUser(user: {
+  id: string;
+  email: string;
+  displayName: string;
+  currentStreak: number;
+  lastLogDate: string | null;
+  carbonScore: number;
+  profile?: unknown | null;
+}) {
   return {
     id: user.id,
     email: user.email,
     displayName: user.displayName,
     hasProfile: Boolean(user.profile),
-    isDemo: user.email === "demo@carboncoach.local"
+    isDemo: user.email === "demo@carboncoach.local",
+    currentStreak: user.currentStreak,
+    lastLogDate: user.lastLogDate,
+    carbonScore: user.carbonScore
   };
 }
+
+
 
 export const authService = {
   async register(input: { email: string; password: string; displayName: string }) {

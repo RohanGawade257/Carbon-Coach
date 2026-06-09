@@ -2,6 +2,7 @@ import { prisma } from "../../config/prisma";
 import { AppError } from "../../shared/errors/AppError";
 import { emissionsService } from "../emissions/emissions.service";
 import { badgesService } from "../badges/badges.service";
+import { usersService } from "../users/users.service";
 
 export const footprintService = {
   async calculate(input: { categoryId: string; activityType: string; quantity: number }) {
@@ -38,6 +39,37 @@ export const footprintService = {
       }
     });
 
+    // Update streak
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (user) {
+      const todayStr = new Date().toISOString().split("T")[0];
+      let newStreak = user.currentStreak;
+
+      if (!user.lastLogDate) {
+        newStreak = 1;
+      } else {
+        const lastDate = new Date(user.lastLogDate);
+        const todayDate = new Date(todayStr);
+        const diffTime = todayDate.getTime() - lastDate.getTime();
+        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+        if (diffDays === 1) {
+          newStreak += 1;
+        } else if (diffDays > 1) {
+          newStreak = 1;
+        }
+      }
+
+      await prisma.user.update({
+        where: { id: userId },
+        data: {
+          currentStreak: newStreak,
+          lastLogDate: todayStr
+        }
+      });
+    }
+
+    await usersService.updateUserCarbonScore(userId);
     await badgesService.evaluateForUser(userId);
     return entry;
   },
@@ -71,7 +103,9 @@ export const footprintService = {
     }
 
     await prisma.footprintEntry.delete({ where: { id } });
+    await usersService.updateUserCarbonScore(userId);
     return { success: true };
   }
 };
+
 

@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { CalculatorForm, CalculatorPayload } from "../components/footprint/CalculatorForm";
+import { BillDropzone } from "../components/footprint/BillDropzone";
 import { FootprintEntryList } from "../components/footprint/FootprintEntryList";
 import { ErrorState } from "../components/ui/ErrorState";
 import { LoadingState } from "../components/ui/LoadingState";
@@ -33,7 +34,7 @@ export function CalculatorPage() {
           activityType: payload.activityType,
           quantity: payload.quantity
         }
-    }),
+      }),
     onSuccess: (data) => setEstimate({ kgCo2e: data.kgCo2e, unit: data.factor.unit }),
     onError: (caught) => {
       setError(caught instanceof Error ? caught.message : "Calculation failed");
@@ -77,15 +78,25 @@ export function CalculatorPage() {
         <p className="mt-1 text-sm text-slate-600">Calculate and save activity-based emissions.</p>
       </div>
       {error ? <ErrorState message={error} /> : null}
-      <CalculatorForm
-        categories={categoriesQuery.data!.categories}
-        estimate={estimate}
-        isCalculating={calculateMutation.isPending}
-        isSaving={createMutation.isPending}
-        onCalculate={async (payload) => calculateMutation.mutateAsync(payload).then(() => undefined)}
-        onSave={async (payload) => createMutation.mutateAsync(payload).then(() => undefined)}
-      />
+
+      <div className="grid gap-6 md:grid-cols-3">
+        <div className="md:col-span-2">
+          <CalculatorForm
+            categories={categoriesQuery.data!.categories}
+            estimate={estimate}
+            isCalculating={calculateMutation.isPending}
+            isSaving={createMutation.isPending}
+            onCalculate={async (payload) => calculateMutation.mutateAsync(payload).then(() => undefined)}
+            onSave={async (payload) => createMutation.mutateAsync(payload).then(() => undefined)}
+          />
+        </div>
+        <div className="rounded-xl border border-emerald-100 bg-white p-5 shadow-sm">
+          <BillDropzone />
+        </div>
+      </div>
+
       <FootprintEntryList entries={entriesQuery.data!.entries} onDelete={(id) => deleteMutation.mutateAsync(id).then(() => undefined)} />
     </div>
   );
 }
+

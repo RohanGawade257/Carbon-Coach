@@ -101,4 +101,16 @@ export type ApiShapes = {
   conversation: { conversation: AiConversation };
   message: { message: AiMessage };
   userChallenge: { userChallenge: UserChallenge };
+  leaderboard: {
+    leaderboard: Array<{
+      rank: number;
+      id: string;
+      displayName: string;
+      currentStreak: number;
+      carbonScore: number;
+      entriesCount: number;
+      isCurrentUser: boolean;
+      avatarSeed: string;
+    }>;
+  };
 };

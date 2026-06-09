@@ -6,6 +6,12 @@ export const usersController = {
   async me(req: AuthenticatedRequest, res: Response) {
     const user = await usersService.getById(req.user.id);
     res.json({ user });
+  },
+
+  async leaderboard(req: AuthenticatedRequest, res: Response) {
+    const list = await usersService.getLeaderboard(req.user.id);
+    res.json({ leaderboard: list });
   }
 };
+
 

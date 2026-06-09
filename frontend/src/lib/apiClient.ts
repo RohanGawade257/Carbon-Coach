@@ -42,3 +42,27 @@ export async function apiRequest<T>(path: string, options: ApiRequestOptions = {
   return payload as T;
 }
 
+export async function apiRequestRaw<T>(path: string, options: { method?: string; body?: BodyInit } = {}): Promise<T> {
+  const token = localStorage.getItem("carbon-coach-token");
+  const headers: HeadersInit = {};
+
+  if (token) {
+    headers.Authorization = `Bearer ${token}`;
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    method: options.method ?? "GET",
+    headers,
+    body: options.body
+  });
+
+  const payload = await response.json().catch(() => null);
+
+  if (!response.ok) {
+    throw new ApiError(payload?.error?.message ?? "Request failed", response.status, payload?.error?.code);
+  }
+
+  return payload as T;
+}
+
+

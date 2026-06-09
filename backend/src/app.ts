@@ -14,6 +14,7 @@ import { recommendationsRoutes } from "./modules/recommendations/recommendations
 import { challengesRoutes, userChallengesRoutes } from "./modules/challenges/challenges.routes";
 import { badgesRoutes } from "./modules/badges/badges.routes";
 import { demoRoutes } from "./modules/demo/demo.routes";
+import { ocrRoutes } from "./modules/ocr/ocr.routes";
 
 export const app = express();
 
@@ -37,5 +38,6 @@ app.use("/api/challenges", challengesRoutes);
 app.use("/api/user-challenges", userChallengesRoutes);
 app.use("/api/badges", badgesRoutes);
 app.use("/api/demo", demoRoutes);
+app.use("/api/ocr", ocrRoutes);
 
 app.use(errorMiddleware);

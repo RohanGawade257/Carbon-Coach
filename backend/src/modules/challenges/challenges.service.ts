@@ -1,6 +1,7 @@
 import { prisma } from "../../config/prisma";
 import { AppError } from "../../shared/errors/AppError";
 import { badgesService } from "../badges/badges.service";
+import { usersService } from "../users/users.service";
 
 function isUniqueConstraintError(error: unknown) {
   return typeof error === "object" && error !== null && "code" in error && error.code === "P2002";
@@ -50,6 +51,7 @@ export const challengesService = {
       });
 
       await badgesService.evaluateForUser(userId);
+      await usersService.updateUserCarbonScore(userId);
       return userChallenge;
     } catch (error) {
       if (isUniqueConstraintError(error)) {
@@ -93,7 +95,9 @@ export const challengesService = {
     if (status === "Completed") {
       await badgesService.evaluateForUser(userId);
     }
+    await usersService.updateUserCarbonScore(userId);
 
     return updated;
   }
 };
+

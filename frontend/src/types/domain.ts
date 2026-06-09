@@ -4,7 +4,11 @@ export type User = {
   displayName: string;
   hasProfile: boolean;
   isDemo: boolean;
+  currentStreak: number;
+  lastLogDate: string | null;
+  carbonScore: number;
 };
+
 
 export type UserProfile = {
   id: string;
