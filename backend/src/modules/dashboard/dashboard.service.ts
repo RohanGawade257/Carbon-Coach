@@ -28,6 +28,134 @@ function categoryBreakdown(entries: { kgCo2e: unknown; category: { name: string 
     .sort((a, b) => b.kgCo2e - a.kgCo2e);
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function gradeForScore(score: number) {
+  if (score >= 900) return "A+";
+  if (score >= 800) return "A";
+  if (score >= 700) return "B+";
+  if (score >= 600) return "B";
+  if (score >= 500) return "C";
+  return "D";
+}
+
+function levelForScore(score: number) {
+  if (score >= 800) {
+    return { level: "Level 5 - Climate Champion", nextLevelTarget: null, nextLevelName: null };
+  }
+  if (score >= 700) {
+    return { level: "Level 4 - Sustainability Advocate", nextLevelTarget: 800, nextLevelName: "Climate Champion" };
+  }
+  if (score >= 600) {
+    return { level: "Level 3 - Eco Explorer", nextLevelTarget: 700, nextLevelName: "Sustainability Advocate" };
+  }
+  if (score >= 500) {
+    return { level: "Level 2 - Conscious Consumer", nextLevelTarget: 600, nextLevelName: "Eco Explorer" };
+  }
+  return { level: "Level 1 - Beginner", nextLevelTarget: 500, nextLevelName: "Conscious Consumer" };
+}
+
+function totalForCategory(entries: { kgCo2e: unknown; category: { name: string } }[], category: string) {
+  const normalized = category.toLowerCase();
+  return roundCarbon(
+    entries
+      .filter((entry) => entry.category.name.toLowerCase() === normalized)
+      .reduce((sum, entry) => sum + Number(entry.kgCo2e), 0)
+  );
+}
+
+function missionCopy(category: string) {
+  const normalized = category.toLowerCase();
+  if (normalized === "transport") {
+    return {
+      title: "Reduce Transport Emissions",
+      description: "Reduce transport emissions by 10% this month."
+    };
+  }
+  if (normalized === "energy") {
+    return {
+      title: "Reduce Energy Emissions",
+      description: "Reduce AC and electricity impact by 10% this month."
+    };
+  }
+  if (normalized === "food") {
+    return {
+      title: "Plant-Forward Month",
+      description: "Add 3 vegetarian meals per week and reduce food emissions by 10%."
+    };
+  }
+  if (normalized === "waste") {
+    return {
+      title: "Reduce Waste Emissions",
+      description: "Reduce waste emissions by 10% this month."
+    };
+  }
+  if (normalized === "shopping") {
+    return {
+      title: "Lower Shopping Impact",
+      description: "Reduce shopping emissions by 10% this month."
+    };
+  }
+  return {
+    title: `Reduce ${category} Emissions`,
+    description: `Reduce ${category.toLowerCase()} emissions by 10% this month.`
+  };
+}
+
+function buildMonthlyMission(input: {
+  category: string;
+  currentCategoryTotal: number;
+  previousCategoryTotal: number;
+  baseline: number;
+  categoryPercentage: number;
+}) {
+  const baselineCategoryEstimate =
+    input.previousCategoryTotal > 0
+      ? input.previousCategoryTotal
+      : roundCarbon(input.baseline * (input.categoryPercentage > 0 ? input.categoryPercentage / 100 : 1));
+  const targetReduction = baselineCategoryEstimate * 0.1;
+  const actualReduction = Math.max(0, baselineCategoryEstimate - input.currentCategoryTotal);
+  const progress = targetReduction > 0 ? roundCarbon(clamp((actualReduction / targetReduction) * 100, 0, 100)) : 0;
+  const copy = missionCopy(input.category);
+
+  return {
+    ...copy,
+    category: input.category,
+    progress,
+    reward: 25,
+    completed: progress >= 100
+  };
+}
+
+function buildCarbonScore(input: {
+  completedActionItems: number;
+  completedChallenges: number;
+  earnedBadges: number;
+  completedRecommendations: number;
+  baseline: number;
+  currentTotal: number;
+  missionCompleted: boolean;
+}) {
+  const footprintImprovement =
+    input.baseline > 0 ? clamp(((input.baseline - input.currentTotal) / input.baseline) * 250, 0, 250) : 0;
+
+  return Math.round(
+    clamp(
+      300 +
+        Math.min(input.completedActionItems * 35, 250) +
+        Math.min(input.completedChallenges * 90, 180) +
+        Math.min(input.earnedBadges * 45, 180) +
+        Math.min(input.completedRecommendations * 70, 140) +
+        footprintImprovement +
+        (input.missionCompleted ? 25 : 0),
+      0,
+      1000
+    )
+  );
+}
+
 export const dashboardService = {
   async overview(userId: string) {
     const now = new Date();
@@ -46,7 +174,11 @@ export const dashboardService = {
       recommendations,
       activeChallenges,
       badges,
-      recentEntries
+      recentEntries,
+      completedActionItems,
+      completedChallenges,
+      earnedBadges,
+      completedRecommendations
     ] = await Promise.all([
       prisma.footprintEntry.findMany({
         where: { userId, occurredAt: { gte: currentStart, lte: currentEnd } },
@@ -90,7 +222,16 @@ export const dashboardService = {
         orderBy: { occurredAt: "desc" },
         take: 6,
         include: { category: true }
-      })
+      }),
+      prisma.actionPlanItem.count({
+        where: {
+          status: "Completed",
+          actionPlan: { userId }
+        }
+      }),
+      prisma.userChallenge.count({ where: { userId, status: "Completed" } }),
+      prisma.userBadge.count({ where: { userId } }),
+      prisma.recommendation.count({ where: { userId, status: "Completed" } })
     ]);
 
     const currentTotal = sumKg(currentEntries);
@@ -104,6 +245,35 @@ export const dashboardService = {
       recommendationHint: "Start by logging your weekly transport."
     };
     const baseline = twin ? Number(twin.baselineKgCo2eMonthly) : currentTotal;
+    const missionCategory = top.category || twin?.topEmissionSource || "Transport";
+    const monthlyMission = buildMonthlyMission({
+      category: missionCategory,
+      currentCategoryTotal: totalForCategory(currentEntries, missionCategory),
+      previousCategoryTotal: totalForCategory(previousEntries, missionCategory),
+      baseline,
+      categoryPercentage: top.percentage
+    });
+    const score = buildCarbonScore({
+      completedActionItems,
+      completedChallenges,
+      earnedBadges,
+      completedRecommendations,
+      baseline,
+      currentTotal,
+      missionCompleted: monthlyMission.completed
+    });
+    const level = levelForScore(score);
+    const nextLevelMessage =
+      level.nextLevelTarget && level.nextLevelName
+        ? `Reach ${level.nextLevelTarget} score to become ${level.nextLevelName}.`
+        : "You have reached the top Carbon Coach level.";
+    const progression = {
+      score,
+      grade: gradeForScore(score),
+      ...level,
+      monthlyMission,
+      futureYouMessages: [`Complete your mission to gain +${monthlyMission.reward} Carbon Score.`, nextLevelMessage]
+    };
     const monthlyTrendMap = new Map<string, number>();
 
     for (let index = 5; index >= 0; index -= 1) {
@@ -199,7 +369,8 @@ export const dashboardService = {
         estimatedReductionPercent,
         timeframeDays: latestSimulation?.days ?? 30,
         explanation: `Future You compares today's ${currentTotal.toFixed(1)} kg CO2e footprint with a projected ${projectedEmissions.toFixed(1)} kg CO2e path if you follow the current plan.`,
-        recommendationHint: "Use the next action-plan item to turn the lower projection into real progress."
+        recommendationHint: "Use the next action-plan item to turn the lower projection into real progress.",
+        progressionMessages: progression.futureYouMessages
       },
       charts: {
         categoryBreakdown: breakdown,
@@ -217,7 +388,8 @@ export const dashboardService = {
       activeChallenges,
       recentBadges: badges,
       recentActivity: recentEntries,
-      carbonTwin: twin
+      carbonTwin: twin,
+      progression
     };
   }
 };

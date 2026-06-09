@@ -51,6 +51,7 @@ export type DashboardResponse = {
       estimatedReductionKg: number;
       estimatedReductionPercent: number;
       timeframeDays: number;
+      progressionMessages?: string[];
     };
     charts: {
       categoryBreakdown: Array<DashboardInsight & { category: string; kgCo2e: number; percentage: number }>;
@@ -63,6 +64,22 @@ export type DashboardResponse = {
     recentBadges: Array<{ id: string; awardedAt: string; badge: Badge }>;
     recentActivity: FootprintEntry[];
     carbonTwin: CarbonTwinProfile | null;
+    progression: {
+      score: number;
+      grade: string;
+      level: string;
+      nextLevelTarget: number | null;
+      nextLevelName: string | null;
+      monthlyMission: {
+        title: string;
+        description: string;
+        category: string;
+        progress: number;
+        reward: number;
+        completed: boolean;
+      };
+      futureYouMessages: string[];
+    };
   };
 };
 

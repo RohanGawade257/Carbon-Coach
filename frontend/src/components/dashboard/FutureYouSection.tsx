@@ -9,7 +9,8 @@ export function FutureYouSection({
   estimatedReductionPercent,
   timeframeDays,
   explanation,
-  recommendationHint
+  recommendationHint,
+  progressionMessages = []
 }: {
   currentEmissions: number;
   projectedEmissions: number;
@@ -18,6 +19,7 @@ export function FutureYouSection({
   timeframeDays: number;
   explanation: string;
   recommendationHint: string;
+  progressionMessages?: string[];
 }) {
   return (
     <Card className="space-y-5" id="future-you">
@@ -54,6 +56,15 @@ export function FutureYouSection({
         </div>
       </div>
       <InsightPanel explanation={explanation} recommendationHint={recommendationHint} />
+      {progressionMessages.length > 0 ? (
+        <div className="grid gap-3 md:grid-cols-2">
+          {progressionMessages.map((message) => (
+            <div key={message} className="rounded-md bg-emerald-50 p-3 text-sm font-semibold text-forest">
+              {message}
+            </div>
+          ))}
+        </div>
+      ) : null}
     </Card>
   );
 }

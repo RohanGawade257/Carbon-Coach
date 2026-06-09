@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { Activity, Leaf, Target, TrendingDown } from "lucide-react";
+import { Activity, Award, Flag, Leaf, Target, TrendingDown } from "lucide-react";
 import { ActionPlanWidget } from "../components/dashboard/ActionPlanWidget";
 import { CarbonTwinProjectionChart } from "../components/dashboard/CarbonTwinProjectionChart";
 import { CategoryBreakdownChart } from "../components/dashboard/CategoryBreakdownChart";
@@ -26,6 +26,24 @@ export function DashboardPage() {
 
   const dashboard = query.data!.dashboard;
   const journey = dashboard.widgets.planProgress;
+  const progression = dashboard.progression ?? {
+    score: 300,
+    grade: "D",
+    level: "Level 1 - Beginner",
+    nextLevelTarget: 500,
+    nextLevelName: "Conscious Consumer",
+    monthlyMission: {
+      title: "Reduce Transport Emissions",
+      description: "Reduce transport emissions by 10% this month.",
+      category: "Transport",
+      progress: 0,
+      reward: 25,
+      completed: false
+    },
+    futureYouMessages: ["Complete your mission to gain +25 Carbon Score.", "Reach 500 score to become Conscious Consumer."]
+  };
+  const mission = progression.monthlyMission;
+  const missionProgress = Math.min(100, Math.max(0, mission.progress));
 
   return (
     <div className="space-y-6">
@@ -33,6 +51,52 @@ export function DashboardPage() {
         <h1 className="text-3xl font-black text-ink">Dashboard</h1>
         <p className="mt-1 text-sm text-slate-600">Where you are now, what to do next, progress made, and the future impact you can create.</p>
       </div>
+
+      <Card className="space-y-4" id="carbon-score">
+        <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
+          <div className="flex items-start gap-3">
+            <div className="rounded-md bg-emerald-100 p-3 text-forest">
+              <Award className="h-6 w-6" aria-hidden="true" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-slate-500">Carbon Score</p>
+              <h2 className="mt-1 text-3xl font-black text-ink">
+                {progression.score} <span className="text-lg font-bold text-forest">Grade {progression.grade}</span>
+              </h2>
+              <p className="mt-1 text-sm font-semibold text-slate-600">{progression.level}</p>
+            </div>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[440px]">
+            <div className="rounded-md bg-emerald-50 p-4">
+              <p className="text-xs font-bold uppercase text-slate-500">Current Mission</p>
+              <p className="mt-1 font-bold text-ink">{mission.title}</p>
+              <p className="mt-1 text-sm text-slate-600">{mission.description}</p>
+            </div>
+            <div className="rounded-md bg-sky-50 p-4">
+              <p className="text-xs font-bold uppercase text-slate-500">Next Level Goal</p>
+              <p className="mt-1 text-2xl font-black text-skyline">
+                {progression.nextLevelTarget ? `${progression.nextLevelTarget} Score` : "Top Level"}
+              </p>
+              <p className="mt-1 text-sm text-slate-600">
+                {progression.nextLevelName ? `Reach ${progression.nextLevelName}` : "Climate Champion reached"}
+              </p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div className="mb-2 flex items-center justify-between gap-3 text-sm font-semibold text-slate-600">
+            <span className="inline-flex items-center gap-2">
+              <Flag className="h-4 w-4 text-forest" aria-hidden="true" />
+              Mission Progress
+            </span>
+            <span>{missionProgress.toFixed(0)}%</span>
+          </div>
+          <div className="h-4 rounded-full bg-emerald-100">
+            <div className="h-4 rounded-full bg-forest transition-all" style={{ width: `${missionProgress}%` }} />
+          </div>
+          <p className="mt-2 text-sm font-semibold text-forest">Complete your mission to gain +{mission.reward} Carbon Score.</p>
+        </div>
+      </Card>
 
       <Card className="space-y-4" id="carbon-reduction-journey">
         <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
