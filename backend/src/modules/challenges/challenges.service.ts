@@ -94,10 +94,61 @@ export const challengesService = {
 
     if (status === "Completed") {
       await badgesService.evaluateForUser(userId);
+      await prisma.user.update({
+        where: { id: userId },
+        data: { points: { increment: 100 } }
+      });
     }
+    await usersService.updateUserCarbonScore(userId);
+
+    return updated;
+  },
+
+  async completeChallenge(userId: string, challengeId?: string, userChallengeId?: string) {
+    let userChallenge;
+    if (userChallengeId) {
+      userChallenge = await prisma.userChallenge.findFirst({
+        where: { id: userChallengeId, userId }
+      });
+    } else if (challengeId) {
+      userChallenge = await prisma.userChallenge.findUnique({
+        where: {
+          userId_challengeId: {
+            userId,
+            challengeId
+          }
+        }
+      });
+    }
+
+    if (!userChallenge) {
+      throw new AppError("User challenge not found", 404, "USER_CHALLENGE_NOT_FOUND");
+    }
+
+    if (userChallenge.status === "Completed") {
+      return userChallenge;
+    }
+
+    const updated = await prisma.userChallenge.update({
+      where: { id: userChallenge.id },
+      data: {
+        status: "Completed",
+        progressValue: 100,
+        completedAt: new Date()
+      },
+      include: { challenge: { include: { category: true } } }
+    });
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { points: { increment: 100 } }
+    });
+
+    await badgesService.evaluateForUser(userId);
     await usersService.updateUserCarbonScore(userId);
 
     return updated;
   }
 };
+
 

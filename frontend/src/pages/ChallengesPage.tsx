@@ -6,6 +6,7 @@ import { LoadingState } from "../components/ui/LoadingState";
 import { apiRequest } from "../lib/apiClient";
 import { ApiShapes } from "../types/api";
 import { useToastStore } from "../stores/toastStore";
+import { useAuthStore } from "../stores/authStore";
 
 const GRADIENTS = [
   "from-pink-500 to-rose-500",
@@ -18,11 +19,13 @@ const GRADIENTS = [
 export function ChallengesPage() {
   const queryClient = useQueryClient();
   const showToast = useToastStore((state) => state.showToast);
+  const hydrateMe = useAuthStore((state) => state.hydrateMe);
 
   const query = useQuery({
     queryKey: ["challenges"],
     queryFn: () => apiRequest<ApiShapes["challenges"]>("/challenges")
   });
+
 
   const leaderboardQuery = useQuery({
     queryKey: ["leaderboard"],
@@ -32,6 +35,7 @@ export function ChallengesPage() {
   const joinMutation = useMutation({
     mutationFn: (id: string) => apiRequest(`/challenges/${id}/join`, { method: "POST" }),
     onSuccess: async () => {
+      void hydrateMe();
       await queryClient.invalidateQueries({ queryKey: ["challenges"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       await queryClient.invalidateQueries({ queryKey: ["badges"] });
@@ -45,6 +49,7 @@ export function ChallengesPage() {
     mutationFn: ({ id, progressValue, status }: { id: string; progressValue: number; status?: "Joined" | "Completed" }) =>
       apiRequest(`/user-challenges/${id}`, { method: "PATCH", body: { progressValue, status } }),
     onSuccess: async (_data, variables) => {
+      void hydrateMe();
       await queryClient.invalidateQueries({ queryKey: ["challenges"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       await queryClient.invalidateQueries({ queryKey: ["badges"] });
@@ -53,6 +58,7 @@ export function ChallengesPage() {
     },
     onError: () => showToast("Something Went Wrong", "error")
   });
+
 
   if (query.isLoading || leaderboardQuery.isLoading) return <LoadingState message="Loading challenges and leaderboard" />;
   if (query.error || leaderboardQuery.error) return <ErrorState message="Failed to load page data" />;

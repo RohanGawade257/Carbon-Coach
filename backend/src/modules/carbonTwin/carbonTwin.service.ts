@@ -261,8 +261,13 @@ export const carbonTwinService = {
 
     if (status === "Completed") {
       await badgesService.evaluateForUser(userId);
+      await prisma.user.update({
+        where: { id: userId },
+        data: { points: { increment: 50 } }
+      });
     }
     await usersService.updateUserCarbonScore(userId);
+
 
     return {
       item: updated,

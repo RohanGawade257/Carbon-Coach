@@ -7,7 +7,9 @@ export type User = {
   currentStreak: number;
   lastLogDate: string | null;
   carbonScore: number;
+  points: number;
 };
+
 
 
 export type UserProfile = {

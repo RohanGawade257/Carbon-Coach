@@ -10,6 +10,7 @@ function serializeUser(user: {
   currentStreak: number;
   lastLogDate: string | null;
   carbonScore: number;
+  points: number;
   profile?: unknown | null;
 }) {
   return {
@@ -20,9 +21,11 @@ function serializeUser(user: {
     isDemo: user.email === "demo@carboncoach.local",
     currentStreak: user.currentStreak,
     lastLogDate: user.lastLogDate,
-    carbonScore: user.carbonScore
+    carbonScore: user.carbonScore,
+    points: user.points
   };
 }
+
 
 
 

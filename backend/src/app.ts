@@ -15,6 +15,11 @@ import { challengesRoutes, userChallengesRoutes } from "./modules/challenges/cha
 import { badgesRoutes } from "./modules/badges/badges.routes";
 import { demoRoutes } from "./modules/demo/demo.routes";
 import { ocrRoutes } from "./modules/ocr/ocr.routes";
+import { authMiddleware } from "./middleware/authMiddleware";
+import { validate } from "./middleware/validateMiddleware";
+import { carbonTwinController } from "./modules/carbonTwin/carbonTwin.controller";
+import { updateActionPlanItemSchema } from "./modules/carbonTwin/carbonTwin.schemas";
+
 
 export const app = express();
 
@@ -29,9 +34,12 @@ app.use("/api/users", usersRoutes);
 app.use("/api/profile", profileRoutes);
 app.use("/api/emissions", emissionsRoutes);
 app.use("/api/footprint", footprintRoutes);
+app.use("/api/footprints", footprintRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/carbon-twin", carbonTwinRoutes);
 app.use("/api/action-plan", actionPlanRoutes);
+app.patch("/api/plan/task/:id", authMiddleware, validate(updateActionPlanItemSchema), carbonTwinController.updateActionItem);
+
 app.use("/api/ai", aiRoutes);
 app.use("/api/recommendations", recommendationsRoutes);
 app.use("/api/challenges", challengesRoutes);

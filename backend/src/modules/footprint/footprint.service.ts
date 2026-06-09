@@ -64,9 +64,11 @@ export const footprintService = {
         where: { id: userId },
         data: {
           currentStreak: newStreak,
-          lastLogDate: todayStr
+          lastLogDate: todayStr,
+          points: { increment: 10 }
         }
       });
+
     }
 
     await usersService.updateUserCarbonScore(userId);

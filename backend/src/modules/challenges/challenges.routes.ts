@@ -8,6 +8,8 @@ export const challengesRoutes = Router();
 export const userChallengesRoutes = Router();
 
 challengesRoutes.get("/", authMiddleware, challengesController.list);
+challengesRoutes.post("/complete", authMiddleware, challengesController.completeChallenge);
 challengesRoutes.post("/:id/join", authMiddleware, validate(challengeParamsSchema), challengesController.join);
+
 userChallengesRoutes.patch("/:id", authMiddleware, validate(updateUserChallengeSchema), challengesController.update);
 

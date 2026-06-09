@@ -9,6 +9,7 @@ import { LoadingState } from "../components/ui/LoadingState";
 import { apiRequest } from "../lib/apiClient";
 import { ApiShapes, DashboardResponse, LocalInsightsMeta } from "../types/api";
 import { useToastStore } from "../stores/toastStore";
+import { useAuthStore } from "../stores/authStore";
 
 type ActionPlanProgress = DashboardResponse["dashboard"]["widgets"]["planProgress"];
 type ActionItemResponse = {
@@ -25,6 +26,7 @@ function localInsightsMessage(defaultMessage: string, usedLocalInsights?: boolea
 export function CarbonTwinPage() {
   const queryClient = useQueryClient();
   const showToast = useToastStore((state) => state.showToast);
+  const hydrateMe = useAuthStore((state) => state.hydrateMe);
   const query = useQuery({
     queryKey: ["carbonTwin"],
     queryFn: () => apiRequest<ApiShapes["carbonTwin"]>("/carbon-twin")
@@ -68,6 +70,7 @@ export function CarbonTwinPage() {
     mutationFn: ({ id, status }: { id: string; status: "Pending" | "Completed" }) =>
       apiRequest<ActionItemResponse>(`/action-plan/items/${id}`, { method: "PATCH", body: { status } }),
     onSuccess: async (data, variables) => {
+      void hydrateMe();
       queryClient.setQueryData<DashboardResponse>(["dashboard"], (current) => {
         if (!current) return current;
         const actionPlanPreview = current.dashboard.actionPlanPreview

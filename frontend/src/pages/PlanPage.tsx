@@ -6,6 +6,7 @@ import { LoadingState } from "../components/ui/LoadingState";
 import { apiRequest } from "../lib/apiClient";
 import { DashboardResponse } from "../types/api";
 import { useToastStore } from "../stores/toastStore";
+import { useAuthStore } from "../stores/authStore";
 
 type ActionPlanProgress = DashboardResponse["dashboard"]["widgets"]["planProgress"];
 type ActionItemResponse = {
@@ -16,6 +17,7 @@ type ActionItemResponse = {
 export function PlanPage() {
   const queryClient = useQueryClient();
   const showToast = useToastStore((state) => state.showToast);
+  const hydrateMe = useAuthStore((state) => state.hydrateMe);
 
   const query = useQuery({
     queryKey: ["dashboard"],
@@ -26,6 +28,7 @@ export function PlanPage() {
     mutationFn: ({ id, status }: { id: string; status: "Pending" | "Completed" }) =>
       apiRequest<ActionItemResponse>(`/action-plan/items/${id}`, { method: "PATCH", body: { status } }),
     onSuccess: async (data, variables) => {
+      void hydrateMe();
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       await queryClient.invalidateQueries({ queryKey: ["carbonTwin"] });
       await queryClient.invalidateQueries({ queryKey: ["badges"] });
@@ -34,6 +37,7 @@ export function PlanPage() {
     },
     onError: () => showToast("Something Went Wrong", "error")
   });
+
 
   if (query.isLoading) return <LoadingState message="Loading 30-Day Plan" />;
   if (query.error) return <ErrorState message="Failed to load 30-Day Plan" />;

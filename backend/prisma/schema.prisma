@@ -15,6 +15,7 @@ model User {
   currentStreak           Int                      @default(0)
   lastLogDate             String?
   carbonScore             Int                      @default(0)
+  points                  Int                      @default(0)
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
   profile                 UserProfile?

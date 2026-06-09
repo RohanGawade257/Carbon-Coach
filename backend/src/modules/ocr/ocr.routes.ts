@@ -62,6 +62,11 @@ ocrRoutes.post("/upload", authMiddleware, upload.single("file"), async (req: Aut
     notes: `OCR Extracted from bill (${filename}): ${quantity} ${factor.unit} of ${factor.category.name}`
   });
 
+  await prisma.user.update({
+    where: { id: req.user.id },
+    data: { points: { increment: 25 } }
+  });
+
   res.status(201).json({
     success: true,
     entry,
@@ -70,3 +75,4 @@ ocrRoutes.post("/upload", authMiddleware, upload.single("file"), async (req: Aut
     activityType: factor.activityType
   });
 });
+

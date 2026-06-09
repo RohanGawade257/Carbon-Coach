@@ -3,12 +3,14 @@ import { FileText, Upload, X, CheckCircle, Loader2 } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequestRaw } from "../../lib/apiClient";
 import { useToastStore } from "../../stores/toastStore";
+import { useAuthStore } from "../../stores/authStore";
 
 type OcrResult = { success: boolean; quantity: number; category: string; activityType: string };
 
 export function BillDropzone() {
   const queryClient = useQueryClient();
   const showToast = useToastStore((s) => s.showToast);
+  const hydrateMe = useAuthStore((s) => s.hydrateMe);
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<OcrResult | null>(null);
@@ -22,12 +24,14 @@ export function BillDropzone() {
     },
     onSuccess: (data) => {
       setResult(data);
+      void hydrateMe();
       queryClient.invalidateQueries({ queryKey: ["footprintEntries"] });
       queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       showToast(`Logged ${data.quantity} units from ${data.category} bill.`, "success");
     },
     onError: () => showToast("Bill scan failed. Try a text-based file.", "error")
   });
+
 
   function handleFile(f: File) {
     setFile(f);

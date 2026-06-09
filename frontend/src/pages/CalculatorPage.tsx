@@ -8,10 +8,13 @@ import { LoadingState } from "../components/ui/LoadingState";
 import { apiRequest } from "../lib/apiClient";
 import { ApiShapes } from "../types/api";
 import { useToastStore } from "../stores/toastStore";
+import { useAuthStore } from "../stores/authStore";
 
 export function CalculatorPage() {
   const queryClient = useQueryClient();
   const showToast = useToastStore((state) => state.showToast);
+  const hydrateMe = useAuthStore((state) => state.hydrateMe);
+
   const [estimate, setEstimate] = useState<{ kgCo2e: number; unit: string } | undefined>();
   const [error, setError] = useState("");
 
@@ -45,6 +48,7 @@ export function CalculatorPage() {
   const createMutation = useMutation({
     mutationFn: (payload: CalculatorPayload) => apiRequest("/footprint/entries", { method: "POST", body: payload }),
     onSuccess: async () => {
+      void hydrateMe();
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ["footprintEntries"] }),
         queryClient.invalidateQueries({ queryKey: ["dashboard"] }),
@@ -61,12 +65,14 @@ export function CalculatorPage() {
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiRequest(`/footprint/entries/${id}`, { method: "DELETE" }),
     onSuccess: async () => {
+      void hydrateMe();
       await queryClient.invalidateQueries({ queryKey: ["footprintEntries"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       showToast("Footprint Entry Deleted");
     },
     onError: () => showToast("Something Went Wrong", "error")
   });
+
 
   if (categoriesQuery.isLoading || entriesQuery.isLoading) return <LoadingState message="Loading calculator" />;
   if (categoriesQuery.error || entriesQuery.error) return <ErrorState message="Calculator failed to load" />;

@@ -43,13 +43,13 @@ export function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
             </motion.div>
           )}
 
-          {user && typeof user.carbonScore === "number" && (
+          {user && typeof user.points === "number" && (
             <motion.div
               whileHover={{ scale: 1.05 }}
               className="hidden sm:flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-forest border border-emerald-200 shadow-sm cursor-default"
             >
               <span>🏆</span>
-              <span>{user.carbonScore} pts</span>
+              <span>{user.points} pts</span>
             </motion.div>
           )}
 

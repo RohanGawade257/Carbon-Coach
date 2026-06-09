@@ -16,5 +16,12 @@ export const challengesController = {
   async update(req: AuthenticatedRequest, res: Response) {
     const userChallenge = await challengesService.update(req.user.id, String(req.params.id), req.body);
     res.json({ userChallenge });
+  },
+
+  async completeChallenge(req: AuthenticatedRequest, res: Response) {
+    const { challengeId, userChallengeId } = req.body;
+    const userChallenge = await challengesService.completeChallenge(req.user.id, challengeId, userChallengeId);
+    res.json({ success: true, userChallenge });
   }
 };
+
