@@ -33,7 +33,7 @@ export function FutureYouSection({
         </div>
       </div>
       <div className="grid items-stretch gap-3 md:grid-cols-[1fr_auto_1fr_auto_1fr]">
-        <div className="rounded-md bg-emerald-50 p-4">
+        <div className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-100 p-4">
           <p className="text-xs font-bold uppercase text-slate-500">Current Emissions</p>
           <p className="mt-2 text-3xl font-black text-ink">{currentEmissions.toFixed(1)}</p>
           <p className="text-sm font-semibold text-slate-600">kg CO2e this month</p>
@@ -41,7 +41,7 @@ export function FutureYouSection({
         <div className="hidden items-center justify-center text-slate-400 md:flex">
           <ArrowDown className="-rotate-90" aria-hidden="true" />
         </div>
-        <div className="rounded-md bg-sky-50 p-4">
+        <div className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-sky-100 p-4">
           <p className="text-xs font-bold uppercase text-slate-500">Projected Emissions</p>
           <p className="mt-2 text-3xl font-black text-skyline">{projectedEmissions.toFixed(1)}</p>
           <p className="text-sm font-semibold text-slate-600">kg CO2e in {timeframeDays} days</p>
@@ -49,7 +49,7 @@ export function FutureYouSection({
         <div className="hidden items-center justify-center text-slate-400 md:flex">
           <ArrowDown className="-rotate-90" aria-hidden="true" />
         </div>
-        <div className="rounded-md bg-mint p-4">
+        <div className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-200 p-4">
           <p className="text-xs font-bold uppercase text-slate-500">Estimated Reduction</p>
           <p className="mt-2 text-3xl font-black text-forest">{estimatedReductionPercent.toFixed(1)}%</p>
           <p className="text-sm font-semibold text-slate-600">{estimatedReductionKg.toFixed(1)} kg CO2e</p>
@@ -59,7 +59,7 @@ export function FutureYouSection({
       {progressionMessages.length > 0 ? (
         <div className="grid gap-3 md:grid-cols-2">
           {progressionMessages.map((message) => (
-            <div key={message} className="rounded-md bg-emerald-50 p-3 text-sm font-semibold text-forest">
+            <div key={message} className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-100 p-3 text-sm font-semibold text-forest">
               {message}
             </div>
           ))}

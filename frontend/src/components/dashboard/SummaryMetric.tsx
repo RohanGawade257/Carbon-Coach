@@ -18,7 +18,7 @@ export function SummaryMetric({
   recommendationHint: string;
 }) {
   return (
-    <Card className="space-y-4">
+    <Card className="space-y-4" variant="clay">
       <div className="flex items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-slate-500">{title}</p>

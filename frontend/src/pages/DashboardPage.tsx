@@ -51,10 +51,10 @@ export function DashboardPage() {
         <p className="mt-1 text-sm text-slate-600">Where you are now, what to do next, progress made, and the future impact you can create.</p>
       </div>
 
-      <Card className="space-y-4" id="carbon-score">
+      <Card className="space-y-4" id="carbon-score" variant="clay">
         <div className="flex flex-col justify-between gap-4 xl:flex-row xl:items-center">
           <div className="flex items-start gap-3">
-            <div className="rounded-md bg-emerald-100 p-3 text-forest">
+            <div className="rounded-md bg-emerald-100 p-3 text-forest animate-pulse">
               <Award className="h-6 w-6" aria-hidden="true" />
             </div>
             <div>
@@ -66,12 +66,12 @@ export function DashboardPage() {
             </div>
           </div>
           <div className="grid gap-3 sm:grid-cols-2 xl:min-w-[440px]">
-            <div className="rounded-md bg-emerald-50 p-4">
+            <div className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-100 p-4">
               <p className="text-xs font-bold uppercase text-slate-500">Current Mission</p>
               <p className="mt-1 font-bold text-ink">{mission.title}</p>
               <p className="mt-1 text-sm text-slate-600">{mission.description}</p>
             </div>
-            <div className="rounded-md bg-sky-50 p-4">
+            <div className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-sky-100 p-4">
               <p className="text-xs font-bold uppercase text-slate-500">Next Level Goal</p>
               <p className="mt-1 text-2xl font-black text-skyline">
                 {progression.nextLevelTarget ? `${progression.nextLevelTarget} Score` : "Top Level"}
@@ -109,15 +109,15 @@ export function DashboardPage() {
             </p>
           </div>
           <div className="grid gap-3 sm:grid-cols-3">
-            <div className="rounded-md bg-emerald-50 p-4">
+            <div className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-100 p-4">
               <p className="text-xs font-bold uppercase text-slate-500">Complete</p>
               <p className="mt-1 text-2xl font-black text-forest">{journey.completionPercentage.toFixed(0)}%</p>
             </div>
-            <div className="rounded-md bg-emerald-50 p-4">
+            <div className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-100 p-4">
               <p className="text-xs font-bold uppercase text-slate-500">Estimated Savings</p>
               <p className="mt-1 text-2xl font-black text-forest">{journey.estimatedSavingsKgCo2e.toFixed(1)} kg</p>
             </div>
-            <div className="rounded-md bg-emerald-50 p-4">
+            <div className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-100 p-4">
               <p className="text-xs font-bold uppercase text-slate-500">Current Streak</p>
               <p className="mt-1 text-2xl font-black text-forest">{journey.currentStreakDays || 0} days</p>
             </div>
@@ -190,7 +190,7 @@ export function DashboardPage() {
               <p className="text-sm text-slate-500">Generate recommendations to see next actions.</p>
             ) : (
               dashboard.recommendations.map((recommendation) => (
-                <div key={recommendation.id} className="rounded-md bg-emerald-50 p-3">
+                <div key={recommendation.id} className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-100 p-3">
                   <p className="font-semibold text-ink">{recommendation.title}</p>
                   <p className="text-sm text-slate-600">{Number(recommendation.estimatedSavingsKgCo2e).toFixed(1)} kg CO2e savings</p>
                 </div>
@@ -205,7 +205,7 @@ export function DashboardPage() {
               <p className="text-sm text-slate-500">Join a challenge to track progress.</p>
             ) : (
               dashboard.activeChallenges.map((challenge) => (
-                <div key={challenge.id} className="rounded-md bg-emerald-50 p-3">
+                <div key={challenge.id} className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-100 p-3">
                   <p className="font-semibold text-ink">{challenge.challenge.title}</p>
                   <p className="text-sm text-slate-600">{challenge.progressValue}% complete</p>
                 </div>

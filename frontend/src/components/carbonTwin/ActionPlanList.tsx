@@ -23,7 +23,7 @@ export function ActionPlanList({
       </div>
       <div className="mt-5 max-h-[620px] space-y-3 overflow-y-auto pr-1">
         {(plan?.items ?? []).map((item) => (
-          <div key={item.id} className="flex items-start justify-between gap-3 rounded-md border border-emerald-100 bg-white p-3">
+          <div key={item.id} className="flex items-start justify-between gap-3 rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-100 p-3">
             <div>
               <p className="text-sm font-bold text-forest">Day {item.dayNumber}</p>
               <h3 className="font-semibold text-ink">{item.title}</h3>

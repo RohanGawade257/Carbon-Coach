@@ -12,7 +12,7 @@ export function ActionPlanWidget({ plan }: { plan: ActionPlan | null }) {
       </div>
       <div className="space-y-3">
         {(plan?.items ?? []).slice(0, 5).map((item) => (
-          <div key={item.id} className="flex items-start justify-between gap-3 rounded-md bg-emerald-50 p-3">
+          <div key={item.id} className="flex items-start justify-between gap-3 rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-100 p-3">
             <div>
               <p className="font-semibold text-ink">Day {item.dayNumber}: {item.title}</p>
               <p className="text-sm text-slate-600">{item.category}</p>

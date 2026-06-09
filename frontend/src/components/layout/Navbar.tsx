@@ -15,7 +15,7 @@ export function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
   }
 
   return (
-    <header className="sticky top-0 z-20 border-b border-emerald-100 bg-white/95 backdrop-blur">
+    <header className="sticky top-4 mx-4 my-2 z-20 rounded-2xl bg-white/70 backdrop-blur-md border border-white/30 shadow-sm">
       <div className="flex h-16 items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-3">
           <button className="focus-ring rounded-md p-2 lg:hidden" type="button" onClick={onMenuClick} aria-label="Open navigation">
@@ -32,10 +32,10 @@ export function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
             <motion.div
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
-              className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-sm font-semibold border cursor-default transition-all ${
+              className={`flex items-center gap-1.5 rounded-2xl bg-white px-3 py-1 text-sm font-semibold border cursor-default transition-all shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] ${
                 user.currentStreak > 0 
-                  ? "bg-amber-50 text-amber-700 border-amber-200 shadow-sm" 
-                  : "bg-slate-50 text-slate-500 border-slate-200"
+                  ? "text-amber-700 border-amber-200/50" 
+                  : "text-slate-500 border-slate-200/50"
               }`}
             >
               <Flame className={`h-4 w-4 ${user.currentStreak > 0 ? "fill-amber-500 text-amber-500 animate-pulse" : "text-slate-400"}`} />
@@ -46,7 +46,7 @@ export function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
           {user && typeof user.points === "number" && (
             <motion.div
               whileHover={{ scale: 1.05 }}
-              className="hidden sm:flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-sm font-semibold text-forest border border-emerald-200 shadow-sm cursor-default"
+              className="hidden sm:flex items-center gap-1.5 rounded-2xl bg-white px-3 py-1 text-sm font-semibold text-forest border border-emerald-200/50 shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] cursor-default"
             >
               <span>🏆</span>
               <span>{user.points} pts</span>

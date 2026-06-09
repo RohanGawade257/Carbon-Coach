@@ -24,23 +24,23 @@ export function TwinProfileCard({ twin }: { twin: CarbonTwinProfile | null }) {
         </div>
       </div>
       <dl className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-md bg-emerald-50 p-3">
+        <div className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-100 p-3">
           <dt className="text-xs font-bold uppercase text-slate-500">Top source</dt>
           <dd className="mt-1 font-semibold text-ink">{twin.topEmissionSource}</dd>
         </div>
-        <div className="rounded-md bg-emerald-50 p-3">
+        <div className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-100 p-3">
           <dt className="text-xs font-bold uppercase text-slate-500">Baseline</dt>
           <dd className="mt-1 font-semibold text-ink">{Number(twin.baselineKgCo2eMonthly).toFixed(1)} kg CO2e/month</dd>
         </div>
-        <div className="rounded-md bg-emerald-50 p-3 sm:col-span-2">
+        <div className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-100 p-3 sm:col-span-2">
           <dt className="text-xs font-bold uppercase text-slate-500">Biggest opportunity</dt>
           <dd className="mt-1 font-semibold text-ink">{twin.biggestOpportunity}</dd>
         </div>
-        <div className="rounded-md bg-emerald-50 p-3">
+        <div className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-100 p-3">
           <dt className="text-xs font-bold uppercase text-slate-500">Goal</dt>
           <dd className="mt-1 text-sm text-ink">{twin.userGoal}</dd>
         </div>
-        <div className="rounded-md bg-emerald-50 p-3">
+        <div className="rounded-2xl bg-white shadow-[inset_0_2px_4px_rgba(255,255,255,0.7),4px_4px_10px_rgba(0,0,0,0.05)] border border-emerald-100 p-3">
           <dt className="text-xs font-bold uppercase text-slate-500">Constraints</dt>
           <dd className="mt-1 text-sm text-ink">{twin.userConstraints}</dd>
         </div>

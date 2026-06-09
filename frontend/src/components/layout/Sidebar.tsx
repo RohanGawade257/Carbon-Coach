@@ -18,7 +18,7 @@ export function Sidebar({ open, onClose }: { open: boolean; onClose: () => void 
   return (
     <>
       <aside
-        className={`fixed inset-y-0 left-0 z-30 w-72 border-r border-emerald-100 bg-white p-4 transition lg:sticky lg:top-0 lg:z-auto lg:block lg:h-screen ${
+        className={`fixed inset-y-0 left-0 z-30 w-72 border-r border-white/30 bg-white/70 backdrop-blur-md p-4 transition lg:sticky lg:top-0 lg:z-auto lg:block lg:h-screen ${
           open ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         }`}
       >
