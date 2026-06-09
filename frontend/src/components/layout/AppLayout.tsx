@@ -9,14 +9,14 @@ export function AppLayout() {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/20 to-slate-100 lg:flex relative overflow-hidden">
+    <div className="h-screen bg-gradient-to-br from-slate-50 via-emerald-50/20 to-slate-100 lg:flex relative overflow-hidden">
       {/* Background Image Watermark */}
       <div 
         className="fixed inset-0 pointer-events-none bg-[url('/img2.jpg')] bg-cover bg-center opacity-[0.04] z-0" 
         aria-hidden="true" 
       />
       <Sidebar open={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-      <div className="min-w-0 flex-1 relative z-10">
+      <div className="min-w-0 flex-1 h-screen overflow-y-auto relative z-10">
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
         <main className="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
           <AnimatePresence mode="wait">
