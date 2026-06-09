@@ -27,10 +27,9 @@ export function ChatInput({ disabled, onSend }: { disabled?: boolean; onSend: (c
         rows={1}
         disabled={disabled}
       />
-      <Button type="submit" disabled={disabled || !content.trim()} aria-label="Send message">
+      <Button type="submit" isLoading={disabled} loadingLabel="Sending..." disabled={disabled || !content.trim()} aria-label="Send message">
         <Send className="h-4 w-4" aria-hidden="true" />
       </Button>
     </form>
   );
 }
-

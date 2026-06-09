@@ -37,7 +37,8 @@ export function ActionPlanList({
             <Button
               variant={item.status === "Completed" ? "secondary" : "primary"}
               isLoading={updatingItemId === item.id}
-              loadingLabel="Saving..."
+              loadingLabel={item.status === "Completed" ? "Reopening Action..." : "Completing Action..."}
+              disabled={Boolean(updatingItemId) && updatingItemId !== item.id}
               onClick={() => onUpdateItem(item.id, item.status === "Completed" ? "Pending" : "Completed")}
               aria-label={`Mark day ${item.dayNumber} ${item.status === "Completed" ? "pending" : "completed"}`}
             >

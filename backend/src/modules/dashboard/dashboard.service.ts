@@ -1,6 +1,7 @@
 import { prisma } from "../../config/prisma";
 import { percentChange, roundCarbon } from "../../shared/utils/carbonMath";
 import { endOfMonth, monthKey, previousMonthRange, startOfMonth } from "../../shared/utils/date";
+import { buildActionPlanProgress } from "../carbonTwin/actionPlanProgress";
 import { insightService } from "./insight.service";
 
 function sumKg(entries: { kgCo2e: unknown }[]) {
@@ -133,18 +134,13 @@ export const dashboardService = {
       }
     ];
     const actionItems = actionPlan?.items ?? [];
-    const totalDays = actionItems.length;
-    const completedDays = actionItems.filter((item) => item.status === "Completed").length;
-    const remainingDays = Math.max(0, totalDays - completedDays);
-    const completionPercentage = totalDays > 0 ? roundCarbon((completedDays / totalDays) * 100) : 0;
-    const completedEstimatedSavings = roundCarbon(
-      actionItems
-        .filter((item) => item.status === "Completed")
-        .reduce((sum, item) => sum + Number(item.estimatedSavingsKgCo2e), 0)
-    );
-    const totalEstimatedSavings = roundCarbon(
-      actionItems.reduce((sum, item) => sum + Number(item.estimatedSavingsKgCo2e), 0)
-    );
+    const progress = buildActionPlanProgress(actionItems);
+    const totalDays = progress.totalDays;
+    const completedDays = progress.completedDays;
+    const remainingDays = progress.remainingDays;
+    const completionPercentage = progress.completionPercentage;
+    const completedEstimatedSavings = progress.completedEstimatedSavings;
+    const totalEstimatedSavings = progress.totalEstimatedSavings;
     const projectedReductionPercent = baseline > 0 ? roundCarbon((totalEstimatedSavings / baseline) * 100) : estimatedReductionPercent;
 
     return {
@@ -178,6 +174,7 @@ export const dashboardService = {
         },
         planProgress: {
           title: "30-Day Plan Progress",
+          ...progress,
           completedDays,
           totalDays,
           remainingDays,

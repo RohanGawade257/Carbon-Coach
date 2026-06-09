@@ -20,11 +20,15 @@ export const carbonTwinController = {
 
   async generateActionPlan(req: AuthenticatedRequest, res: Response) {
     const result = await carbonTwinService.generateActionPlan(req.user.id);
-    res.status(201).json({ actionPlan: result.actionPlan, usedLocalInsights: result.usedLocalInsights });
+    res.status(result.reusedExistingPlan ? 200 : 201).json({
+      actionPlan: result.actionPlan,
+      usedLocalInsights: result.usedLocalInsights,
+      reusedExistingPlan: result.reusedExistingPlan
+    });
   },
 
   async updateActionItem(req: AuthenticatedRequest, res: Response) {
-    const item = await carbonTwinService.updateActionItem(req.user.id, String(req.params.id), req.body.status);
-    res.json({ item });
+    const result = await carbonTwinService.updateActionItem(req.user.id, String(req.params.id), req.body.status);
+    res.json(result);
   }
 };

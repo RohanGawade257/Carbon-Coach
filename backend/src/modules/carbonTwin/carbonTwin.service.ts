@@ -11,6 +11,7 @@ import {
 import { promptTemplates } from "../ai/promptTemplates";
 import { generateStructuredAiResult } from "../ai/structuredAi.service";
 import { badgesService } from "../badges/badges.service";
+import { buildActionPlanProgress } from "./actionPlanProgress";
 
 async function getCategoryTotals(userId: string) {
   const entries = await prisma.footprintEntry.findMany({
@@ -163,6 +164,16 @@ export const carbonTwinService = {
   },
 
   async generateActionPlan(userId: string) {
+    const activePlan = await prisma.actionPlan.findFirst({
+      where: { userId, status: "Active" },
+      orderBy: { createdAt: "desc" },
+      include: { items: { orderBy: { dayNumber: "asc" } } }
+    });
+
+    if (activePlan) {
+      return { actionPlan: activePlan, usedLocalInsights: false, reusedExistingPlan: true };
+    }
+
     const existingTwin = await prisma.carbonTwinProfile.findUnique({ where: { userId } });
     const twin = existingTwin ?? (await this.build(userId)).twin;
     const context = JSON.stringify({
@@ -179,36 +190,51 @@ export const carbonTwinService = {
     );
     const plan = planResult.data;
 
-    await prisma.actionPlan.updateMany({
-      where: { userId, status: "Active" },
-      data: { status: "Archived" }
-    });
-
     const startDate = new Date();
-    const actionPlan = await prisma.actionPlan.create({
-      data: {
-        userId,
-        title: plan.title,
-        summary: plan.summary,
-        startDate,
-        endDate: addDays(startDate, 29),
-        status: "Active",
-        items: {
-          create: plan.days.map((day) => ({
-            dayNumber: day.dayNumber,
-            title: day.title,
-            description: day.description,
-            category: day.category,
-            estimatedSavingsKgCo2e: day.estimatedSavingsKgCo2e,
-            difficulty: day.difficulty,
-            status: "Pending"
-          }))
-        }
-      },
-      include: { items: { orderBy: { dayNumber: "asc" } } }
+
+    const actionPlan = await prisma.$transaction(async (tx) => {
+      await tx.$executeRaw`SELECT pg_advisory_xact_lock(hashtext(${`action-plan:${userId}`}))`;
+
+      const existingActivePlan = await tx.actionPlan.findFirst({
+        where: { userId, status: "Active" },
+        orderBy: { createdAt: "desc" },
+        include: { items: { orderBy: { dayNumber: "asc" } } }
+      });
+
+      if (existingActivePlan) {
+        return existingActivePlan;
+      }
+
+      await tx.actionPlan.updateMany({
+        where: { userId, status: "Active" },
+        data: { status: "Archived" }
+      });
+
+      return tx.actionPlan.create({
+        data: {
+          userId,
+          title: plan.title,
+          summary: plan.summary,
+          startDate,
+          endDate: addDays(startDate, 29),
+          status: "Active",
+          items: {
+            create: plan.days.map((day) => ({
+              dayNumber: day.dayNumber,
+              title: day.title,
+              description: day.description,
+              category: day.category,
+              estimatedSavingsKgCo2e: day.estimatedSavingsKgCo2e,
+              difficulty: day.difficulty,
+              status: "Pending"
+            }))
+          }
+        },
+        include: { items: { orderBy: { dayNumber: "asc" } } }
+      });
     });
 
-    return { actionPlan, usedLocalInsights: planResult.usedFallback };
+    return { actionPlan, usedLocalInsights: planResult.usedFallback, reusedExistingPlan: false };
   },
 
   async updateActionItem(userId: string, id: string, status: "Pending" | "Completed") {
@@ -226,10 +252,18 @@ export const carbonTwinService = {
       data: { status }
     });
 
+    const actionPlan = await prisma.actionPlan.findUnique({
+      where: { id: item.actionPlanId },
+      include: { items: { orderBy: { dayNumber: "asc" } } }
+    });
+
     if (status === "Completed") {
       await badgesService.evaluateForUser(userId);
     }
 
-    return updated;
+    return {
+      item: updated,
+      progress: buildActionPlanProgress(actionPlan?.items ?? [])
+    };
   }
 };

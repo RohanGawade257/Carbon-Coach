@@ -4,6 +4,7 @@ import { env } from "../../config/env";
 let client: GoogleGenerativeAI | null = null;
 const modelCooldownUntil = new Map<string, number>();
 const QUOTA_COOLDOWN_MS = 5 * 60 * 1000;
+const GEMINI_TIMEOUT_MS = 18_000;
 
 function getClient() {
   if (!env.GEMINI_API_KEY) return null;
@@ -40,9 +41,22 @@ async function requestGeminiText(gemini: GoogleGenerativeAI, prompt: string, mod
     }
   });
 
-  const result = await model.generateContent(prompt);
+  const result = await withTimeout(model.generateContent(prompt), GEMINI_TIMEOUT_MS);
   const text = result.response.text();
   return text.trim().length > 0 ? text : null;
+}
+
+function withTimeout<T>(promise: Promise<T>, timeoutMs: number) {
+  return Promise.race([
+    promise,
+    new Promise<T>((_resolve, reject) => {
+      windowlessSetTimeout(() => reject(new Error(`Gemini request timed out after ${timeoutMs}ms`)), timeoutMs);
+    })
+  ]);
+}
+
+function windowlessSetTimeout(callback: () => void, timeoutMs: number) {
+  return setTimeout(callback, timeoutMs);
 }
 
 function getGeminiStatus(error: unknown) {

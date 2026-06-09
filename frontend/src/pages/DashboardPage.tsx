@@ -25,6 +25,7 @@ export function DashboardPage() {
   if (query.error) return <ErrorState message={query.error instanceof Error ? query.error.message : "Dashboard failed to load"} />;
 
   const dashboard = query.data!.dashboard;
+  const journey = dashboard.widgets.planProgress;
 
   return (
     <div className="space-y-6">
@@ -32,6 +33,43 @@ export function DashboardPage() {
         <h1 className="text-3xl font-black text-ink">Dashboard</h1>
         <p className="mt-1 text-sm text-slate-600">Where you are now, what to do next, progress made, and the future impact you can create.</p>
       </div>
+
+      <Card className="space-y-4" id="carbon-reduction-journey">
+        <div className="flex flex-col justify-between gap-3 lg:flex-row lg:items-center">
+          <div>
+            <p className="text-sm font-semibold text-slate-500">Carbon Reduction Journey</p>
+            <h2 className="mt-1 text-2xl font-black text-ink">
+              {journey.completedDays} / {journey.totalDays || 30} Days Completed
+            </h2>
+            <p className="mt-1 text-sm text-slate-600">
+              Completing action-plan days increases your progress and estimated completed savings.
+            </p>
+          </div>
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="rounded-md bg-emerald-50 p-4">
+              <p className="text-xs font-bold uppercase text-slate-500">Complete</p>
+              <p className="mt-1 text-2xl font-black text-forest">{journey.completionPercentage.toFixed(0)}%</p>
+            </div>
+            <div className="rounded-md bg-emerald-50 p-4">
+              <p className="text-xs font-bold uppercase text-slate-500">Estimated Savings</p>
+              <p className="mt-1 text-2xl font-black text-forest">{journey.estimatedSavingsKgCo2e.toFixed(1)} kg</p>
+            </div>
+            <div className="rounded-md bg-emerald-50 p-4">
+              <p className="text-xs font-bold uppercase text-slate-500">Current Streak</p>
+              <p className="mt-1 text-2xl font-black text-forest">{journey.currentStreakDays || 0} days</p>
+            </div>
+          </div>
+        </div>
+        <div>
+          <div className="mb-2 flex items-center justify-between text-sm font-semibold text-slate-600">
+            <span>{journey.completionPercentage.toFixed(1)}% Complete</span>
+            <span>{journey.remainingDays || Math.max(0, 30 - journey.completedDays)} days remaining</span>
+          </div>
+          <div className="h-4 rounded-full bg-emerald-100">
+            <div className="h-4 rounded-full bg-forest transition-all" style={{ width: `${Math.min(100, journey.completionPercentage)}%` }} />
+          </div>
+        </div>
+      </Card>
 
       <section className="space-y-4" aria-labelledby="where-now">
         <div>

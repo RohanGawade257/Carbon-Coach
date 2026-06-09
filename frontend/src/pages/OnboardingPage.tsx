@@ -29,10 +29,15 @@ export function OnboardingPage() {
         method: "PUT",
         body: { ...form, householdSize: Number(form.householdSize) }
       });
-      await apiRequest("/carbon-twin/build", { method: "POST" });
+      return apiRequest<{ usedLocalInsights?: boolean }>("/carbon-twin/build", { method: "POST" });
     },
-    onSuccess: () => {
-      showToast("Carbon Twin Updated");
+    onSuccess: (data) => {
+      showToast(
+        data.usedLocalInsights
+          ? "AI service temporarily unavailable. Using local sustainability insights."
+          : "Carbon Twin updated. Dashboard insights refreshed.",
+        data.usedLocalInsights ? "info" : "success"
+      );
       navigate("/dashboard");
     },
     onError: () => showToast("Something Went Wrong", "error")
@@ -65,7 +70,7 @@ export function OnboardingPage() {
               <Textarea label="Your goal" rows={3} value={form.goalReason} onChange={(event) => update("goalReason", event.target.value)} required />
             </div>
             <div className="sm:col-span-2">
-              <Button type="submit" isLoading={mutation.isPending} loadingLabel="Building...">Save and Build Carbon Twin</Button>
+              <Button type="submit" isLoading={mutation.isPending} loadingLabel="Building Carbon Twin...">Save and Build Carbon Twin</Button>
             </div>
           </form>
         </Card>

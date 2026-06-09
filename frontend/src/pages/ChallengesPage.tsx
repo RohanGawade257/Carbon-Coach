@@ -20,7 +20,7 @@ export function ChallengesPage() {
       await queryClient.invalidateQueries({ queryKey: ["challenges"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       await queryClient.invalidateQueries({ queryKey: ["badges"] });
-      showToast("Challenge Joined");
+      showToast("Challenge joined. Progress tracking started.");
     },
     onError: () => showToast("Something Went Wrong", "error")
   });
@@ -32,7 +32,7 @@ export function ChallengesPage() {
       await queryClient.invalidateQueries({ queryKey: ["challenges"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       await queryClient.invalidateQueries({ queryKey: ["badges"] });
-      showToast(variables.status === "Completed" ? "Challenge Completed" : "Challenge Progress Updated");
+      showToast(variables.status === "Completed" ? "Challenge completed. Badge progress refreshed." : `Challenge progress updated to ${variables.progressValue}%.`);
     },
     onError: () => showToast("Something Went Wrong", "error")
   });

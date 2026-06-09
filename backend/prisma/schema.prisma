@@ -151,6 +151,7 @@ model ActionPlanItem {
   actionPlan               ActionPlan @relation(fields: [actionPlanId], references: [id], onDelete: Cascade)
 
   @@index([actionPlanId, dayNumber])
+  @@unique([actionPlanId, dayNumber])
   @@map("action_plan_items")
 }
 
@@ -169,6 +170,7 @@ model Recommendation {
   category                 EmissionCategory @relation(fields: [categoryId], references: [id], onDelete: Restrict)
 
   @@index([userId, status])
+  @@unique([userId, title])
   @@map("recommendations")
 }
 
@@ -249,4 +251,3 @@ model AiMessage {
   @@index([conversationId, createdAt])
   @@map("ai_messages")
 }
-

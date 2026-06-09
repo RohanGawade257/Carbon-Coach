@@ -7,8 +7,20 @@ import { Button } from "../components/ui/Button";
 import { ErrorState } from "../components/ui/ErrorState";
 import { LoadingState } from "../components/ui/LoadingState";
 import { apiRequest } from "../lib/apiClient";
-import { ApiShapes, LocalInsightsMeta } from "../types/api";
+import { ApiShapes, DashboardResponse, LocalInsightsMeta } from "../types/api";
 import { useToastStore } from "../stores/toastStore";
+
+type ActionPlanProgress = DashboardResponse["dashboard"]["widgets"]["planProgress"];
+type ActionItemResponse = {
+  item: { id: string; status: "Pending" | "Completed" };
+  progress: ActionPlanProgress;
+};
+
+function localInsightsMessage(defaultMessage: string, usedLocalInsights?: boolean) {
+  return usedLocalInsights
+    ? "AI service temporarily unavailable. Using local sustainability insights."
+    : defaultMessage;
+}
 
 export function CarbonTwinPage() {
   const queryClient = useQueryClient();
@@ -23,7 +35,7 @@ export function CarbonTwinPage() {
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ["carbonTwin"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      showToast(data.usedLocalInsights ? "Using local sustainability insights" : "Carbon Twin Updated");
+      showToast(localInsightsMessage("Carbon Twin updated. Dashboard insights refreshed.", data.usedLocalInsights), data.usedLocalInsights ? "info" : "success");
     },
     onError: () => showToast("Something Went Wrong", "error")
   });
@@ -34,7 +46,7 @@ export function CarbonTwinPage() {
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ["carbonTwin"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      showToast(data.usedLocalInsights ? "Using local sustainability insights" : "Simulation Generated");
+      showToast(localInsightsMessage("Simulation generated. Future You projection refreshed.", data.usedLocalInsights), data.usedLocalInsights ? "info" : "success");
     },
     onError: () => showToast("Something Went Wrong", "error")
   });
@@ -44,19 +56,49 @@ export function CarbonTwinPage() {
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ["carbonTwin"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      showToast(data.usedLocalInsights ? "Using local sustainability insights" : "Plan Ready");
+      const message = data.reusedExistingPlan
+        ? "Existing 30-day plan is ready. Progress tracking preserved."
+        : "30-day plan ready. Progress tracking started.";
+      showToast(localInsightsMessage(message, data.usedLocalInsights), data.usedLocalInsights ? "info" : "success");
     },
     onError: () => showToast("Something Went Wrong", "error")
   });
 
   const itemMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: "Pending" | "Completed" }) =>
-      apiRequest(`/action-plan/items/${id}`, { method: "PATCH", body: { status } }),
-    onSuccess: async (_data, variables) => {
+      apiRequest<ActionItemResponse>(`/action-plan/items/${id}`, { method: "PATCH", body: { status } }),
+    onSuccess: async (data, variables) => {
+      queryClient.setQueryData<DashboardResponse>(["dashboard"], (current) => {
+        if (!current) return current;
+        const actionPlanPreview = current.dashboard.actionPlanPreview
+          ? {
+              ...current.dashboard.actionPlanPreview,
+              items: current.dashboard.actionPlanPreview.items.map((item) =>
+                item.id === data.item.id ? { ...item, status: data.item.status } : item
+              )
+            }
+          : current.dashboard.actionPlanPreview;
+
+        return {
+          ...current,
+          dashboard: {
+            ...current.dashboard,
+            widgets: {
+              ...current.dashboard.widgets,
+              planProgress: {
+                ...current.dashboard.widgets.planProgress,
+                ...data.progress
+              }
+            },
+            actionPlanPreview
+          }
+        };
+      });
       await queryClient.invalidateQueries({ queryKey: ["carbonTwin"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       await queryClient.invalidateQueries({ queryKey: ["badges"] });
-      showToast(variables.status === "Completed" ? "Action Item Completed" : "Action Item Updated");
+      const progressText = `Progress is now ${data.progress.completedDays}/${data.progress.totalDays || 30} days.`;
+      showToast(variables.status === "Completed" ? `Action completed. ${progressText}` : `Action reopened. ${progressText}`);
     },
     onError: () => showToast("Something Went Wrong", "error")
   });
@@ -74,10 +116,21 @@ export function CarbonTwinPage() {
           <p className="mt-1 text-sm text-slate-600">A simple personal model for your top source, opportunity, goal, and constraints.</p>
         </div>
         <div className="flex flex-wrap gap-2">
-          <Button variant="secondary" isLoading={buildMutation.isPending} loadingLabel="Building..." onClick={() => buildMutation.mutate()}>
+          <Button
+            variant="secondary"
+            isLoading={buildMutation.isPending}
+            loadingLabel="Building Carbon Twin..."
+            disabled={planMutation.isPending}
+            onClick={() => buildMutation.mutate()}
+          >
             Rebuild Twin
           </Button>
-          <Button isLoading={planMutation.isPending} loadingLabel="Generating..." onClick={() => planMutation.mutate()}>
+          <Button
+            isLoading={planMutation.isPending}
+            loadingLabel="Generating Plan..."
+            disabled={buildMutation.isPending}
+            onClick={() => planMutation.mutate()}
+          >
             Generate 30-Day Plan
           </Button>
         </div>

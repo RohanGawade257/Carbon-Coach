@@ -44,12 +44,12 @@ export function ChallengeCard({
             <div className="h-3 rounded-full bg-forest" style={{ width: `${progress}%` }} />
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button variant="secondary" isLoading={isUpdating} loadingLabel="Updating..." onClick={() => onProgress(userChallenge.id, Math.min(100, progress + 25))}>
+            <Button variant="secondary" isLoading={isUpdating} loadingLabel="Updating Progress..." onClick={() => onProgress(userChallenge.id, Math.min(100, progress + 25))}>
               Add Progress
             </Button>
             <Button
               isLoading={isUpdating}
-              loadingLabel="Updating..."
+              loadingLabel="Completing Challenge..."
               feedbackState={userChallenge.status === "Completed" ? "success" : "idle"}
               successLabel="Completed"
               disabled={userChallenge.status === "Completed"}
@@ -60,7 +60,7 @@ export function ChallengeCard({
           </div>
         </div>
       ) : (
-        <Button isLoading={isJoining} loadingLabel="Joining..." onClick={() => onJoin(challenge.id)}>
+        <Button isLoading={isJoining} loadingLabel="Joining Challenge..." onClick={() => onJoin(challenge.id)}>
           Join Challenge
         </Button>
       )}

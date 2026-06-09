@@ -7,10 +7,12 @@ import { ErrorState } from "../components/ui/ErrorState";
 import { LoadingState } from "../components/ui/LoadingState";
 import { apiRequest } from "../lib/apiClient";
 import { ApiShapes } from "../types/api";
+import { useToastStore } from "../stores/toastStore";
 
 export function AiCoachPage() {
   const queryClient = useQueryClient();
   const [conversationId, setConversationId] = useState<string | null>(null);
+  const showToast = useToastStore((state) => state.showToast);
 
   const conversationsQuery = useQuery({
     queryKey: ["conversations"],
@@ -22,6 +24,7 @@ export function AiCoachPage() {
     onSuccess: async (data) => {
       setConversationId(data.conversation.id);
       await queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      showToast("New chat started. Ask for your next best action.");
     }
   });
 
@@ -39,9 +42,12 @@ export function AiCoachPage() {
 
   const sendMutation = useMutation({
     mutationFn: (content: string) => apiRequest<ApiShapes["message"]>(`/ai/conversations/${conversationId}/messages`, { method: "POST", body: { content } }),
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ["conversation", conversationId] });
       await queryClient.invalidateQueries({ queryKey: ["conversations"] });
+      if (data.message.model === "deterministic-fallback") {
+        showToast("AI service temporarily unavailable. Using local sustainability insights.", "info");
+      }
     }
   });
 
@@ -57,7 +63,12 @@ export function AiCoachPage() {
           <h1 className="text-3xl font-black text-ink">AI Coach</h1>
           <p className="mt-1 text-sm text-slate-600">Ask for sustainability guidance powered by your Carbon Twin.</p>
         </div>
-        <Button variant="secondary" onClick={() => createConversationMutation.mutate()} disabled={createConversationMutation.isPending}>
+        <Button
+          variant="secondary"
+          isLoading={createConversationMutation.isPending}
+          loadingLabel="Starting Chat..."
+          onClick={() => createConversationMutation.mutate()}
+        >
           New Chat
         </Button>
       </div>
@@ -66,7 +77,7 @@ export function AiCoachPage() {
         <Card>
           <p className="text-sm text-slate-600">Start a chat to ask Carbon Coach for your next best action.</p>
           <div className="mt-4">
-            <Button onClick={() => createConversationMutation.mutate()}>Start Chat</Button>
+            <Button isLoading={createConversationMutation.isPending} loadingLabel="Starting Chat..." onClick={() => createConversationMutation.mutate()}>Start Chat</Button>
           </div>
         </Card>
       ) : conversationQuery.isLoading ? (
@@ -77,4 +88,3 @@ export function AiCoachPage() {
     </div>
   );
 }
-

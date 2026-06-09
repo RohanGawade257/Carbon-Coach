@@ -38,9 +38,11 @@ export type DashboardResponse = {
         totalDays: number;
         remainingDays: number;
         completionPercentage: number;
+        estimatedSavingsKgCo2e: number;
         completedEstimatedSavings: number;
         totalEstimatedSavings: number;
         projectedReductionPercent: number;
+        currentStreakDays: number;
       };
     };
     futureYou: DashboardInsight & {
@@ -66,6 +68,7 @@ export type DashboardResponse = {
 
 export type LocalInsightsMeta = {
   usedLocalInsights?: boolean;
+  reusedExistingPlan?: boolean;
 };
 
 export type ApiShapes = {

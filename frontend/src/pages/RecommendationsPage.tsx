@@ -21,7 +21,12 @@ export function RecommendationsPage() {
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ["recommendations"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      showToast(data.usedLocalInsights ? "Using local sustainability insights" : "Recommendations Generated");
+      showToast(
+        data.usedLocalInsights
+          ? "AI service temporarily unavailable. Using local sustainability insights."
+          : "Recommendations updated. Duplicate suggestions were avoided.",
+        data.usedLocalInsights ? "info" : "success"
+      );
     },
     onError: () => showToast("Something Went Wrong", "error")
   });
@@ -32,7 +37,7 @@ export function RecommendationsPage() {
       await queryClient.invalidateQueries({ queryKey: ["recommendations"] });
       await queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       await queryClient.invalidateQueries({ queryKey: ["badges"] });
-      showToast(variables.status === "Completed" ? "Recommendation Completed" : "Recommendation Updated");
+      showToast(variables.status === "Completed" ? "Recommendation completed. Badge progress refreshed." : "Recommendation updated. Dashboard next actions refreshed.");
     },
     onError: () => showToast("Something Went Wrong", "error")
   });
@@ -47,7 +52,7 @@ export function RecommendationsPage() {
           <h1 className="text-3xl font-black text-ink">Recommendations</h1>
           <p className="mt-1 text-sm text-slate-600">Structured AI recommendations validated before saving.</p>
         </div>
-        <Button isLoading={generateMutation.isPending} loadingLabel="Generating..." onClick={() => generateMutation.mutate()}>
+        <Button isLoading={generateMutation.isPending} loadingLabel="Generating Recommendations..." onClick={() => generateMutation.mutate()}>
           Generate Recommendations
         </Button>
       </div>
