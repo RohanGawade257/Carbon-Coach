@@ -1,4 +1,4 @@
-import { Award, Bot, Calculator, CalendarCheck, Gauge, Medal, Sparkles, Star, Trophy, User } from "lucide-react";
+import { Award, Bot, Calculator, CalendarCheck, Gauge, Lightbulb, Medal, Sparkles, Star, Trophy, User } from "lucide-react";
 import { NavLink } from "react-router-dom";
 
 const links = [
@@ -7,6 +7,7 @@ const links = [
   { to: "/dashboard#plan-progress", label: "30-Day Plan", icon: CalendarCheck },
   { to: "/dashboard#future-you", label: "Future You", icon: Sparkles },
   { to: "/ai-coach", label: "AI Coach", icon: Bot },
+  { to: "/recommendations", label: "Recommendations", icon: Lightbulb },
   { to: "/challenges", label: "Challenges", icon: Trophy },
   { to: "/badges", label: "Achievements", icon: Medal },
   { to: "/calculator", label: "Calculator", icon: Calculator },
