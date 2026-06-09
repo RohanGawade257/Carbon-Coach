@@ -9,6 +9,8 @@ import { LoginPage } from "./pages/LoginPage";
 import { RegisterPage } from "./pages/RegisterPage";
 import { OnboardingPage } from "./pages/OnboardingPage";
 import { DashboardPage } from "./pages/DashboardPage";
+import { PlanPage } from "./pages/PlanPage";
+import { FutureYouPage } from "./pages/FutureYouPage";
 import { CalculatorPage } from "./pages/CalculatorPage";
 import { CarbonTwinPage } from "./pages/CarbonTwinPage";
 import { AiCoachPage } from "./pages/AiCoachPage";
@@ -44,6 +46,8 @@ export default function App() {
         <Route path="/onboarding" element={<OnboardingPage />} />
         <Route element={<AppLayout />}>
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/30-day-plan" element={<PlanPage />} />
+          <Route path="/future-you" element={<FutureYouPage />} />
           <Route path="/calculator" element={<CalculatorPage />} />
           <Route path="/carbon-twin" element={<CarbonTwinPage />} />
           <Route path="/ai-coach" element={<AiCoachPage />} />

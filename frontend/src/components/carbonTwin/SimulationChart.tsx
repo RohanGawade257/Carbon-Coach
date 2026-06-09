@@ -24,6 +24,16 @@ export function SimulationChart({ simulations }: { simulations: CarbonTwinSimula
           </BarChart>
         </ResponsiveContainer>
       </div>
+      <div className="mt-4 flex flex-wrap justify-center gap-6 text-sm font-semibold">
+        <span className="flex items-center gap-2 text-slate-700">
+          <span className="h-3.5 w-3.5 rounded bg-[#2f6f9f] inline-block" />
+          🔵 Baseline Footprint
+        </span>
+        <span className="flex items-center gap-2 text-slate-700">
+          <span className="h-3.5 w-3.5 rounded bg-[#1f7a4d] inline-block" />
+          🟢 Simulated Footprint
+        </span>
+      </div>
     </Card>
   );
 }

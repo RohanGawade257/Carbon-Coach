@@ -4,7 +4,6 @@ import { ActionPlanWidget } from "../components/dashboard/ActionPlanWidget";
 import { CarbonTwinProjectionChart } from "../components/dashboard/CarbonTwinProjectionChart";
 import { CategoryBreakdownChart } from "../components/dashboard/CategoryBreakdownChart";
 import { MonthlyTrendChart } from "../components/dashboard/MonthlyTrendChart";
-import { PlanProgressCard } from "../components/dashboard/PlanProgressCard";
 import { RecentActivityList } from "../components/dashboard/RecentActivityList";
 import { SummaryMetric } from "../components/dashboard/SummaryMetric";
 import { FutureYouSection } from "../components/dashboard/FutureYouSection";
@@ -160,8 +159,7 @@ export function DashboardPage() {
           <h2 id="next-action" className="text-xl font-black text-ink">What should I do next?</h2>
           <p className="text-sm text-slate-600">Make the 30-day plan visible and keep the next action obvious.</p>
         </div>
-        <div className="grid gap-6 xl:grid-cols-[0.9fr_1.1fr]">
-          <PlanProgressCard {...dashboard.widgets.planProgress} />
+        <div>
           <ActionPlanWidget plan={dashboard.actionPlanPreview} />
         </div>
       </section>

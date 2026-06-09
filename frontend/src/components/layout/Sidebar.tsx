@@ -4,8 +4,8 @@ import { NavLink } from "react-router-dom";
 const links = [
   { to: "/dashboard", label: "Dashboard", icon: Gauge },
   { to: "/carbon-twin", label: "Carbon Twin", icon: Star },
-  { to: "/dashboard#plan-progress", label: "30-Day Plan", icon: CalendarCheck },
-  { to: "/dashboard#future-you", label: "Future You", icon: Sparkles },
+  { to: "/30-day-plan", label: "30-Day Plan", icon: CalendarCheck },
+  { to: "/future-you", label: "Future You", icon: Sparkles },
   { to: "/ai-coach", label: "AI Coach", icon: Bot },
   { to: "/recommendations", label: "Recommendations", icon: Lightbulb },
   { to: "/challenges", label: "Challenges", icon: Trophy },

@@ -24,14 +24,16 @@ export function HeroSection({ onDemo, loading }: { onDemo: () => void; loading: 
           <p className="mt-6 max-w-2xl text-lg leading-8 text-emerald-50">
             Calculate your footprint, understand the why behind every chart, and reduce emissions with a practical Carbon Twin action plan.
           </p>
-          <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Button onClick={onDemo} isLoading={loading} loadingLabel="Loading demo..." className="bg-white text-ink hover:bg-mint">
+          <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:items-center">
+            <Button onClick={onDemo} isLoading={loading} loadingLabel="Loading demo..." className="bg-green-900 text-ink hover:bg-green-400">
               Try Demo Account
               <ArrowRight className="h-4 w-4" aria-hidden="true" />
             </Button>
-            <a className="focus-ring inline-flex min-h-11 items-center justify-center rounded-md border border-white/40 px-4 py-2 text-sm font-semibold hover:bg-white/10" href="/register">
-              Create Account
-            </a>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <a className="focus-ring inline-flex min-h-11 items-center justify-center rounded-md border border-white/40 px-4 py-2 text-sm font-semibold hover:bg-white/10" href="/register">
+                Create Account
+              </a>
+            </div>
           </div>
         </div>
         <div className="grid max-w-4xl gap-3 sm:grid-cols-3">

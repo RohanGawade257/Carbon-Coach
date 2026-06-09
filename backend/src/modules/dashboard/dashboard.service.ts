@@ -274,29 +274,30 @@ export const dashboardService = {
       monthlyMission,
       futureYouMessages: [`Complete your mission to gain +${monthlyMission.reward} Carbon Score.`, nextLevelMessage]
     };
-    const monthlyTrendMap = new Map<string, number>();
+    const monthlyTrendMap = new Map<string, number | null>();
 
     for (let index = 5; index >= 0; index -= 1) {
       const date = new Date(now.getFullYear(), now.getMonth() - index, 1);
-      monthlyTrendMap.set(monthKey(date), 0);
+      monthlyTrendMap.set(monthKey(date), null);
     }
 
     for (const entry of trendEntries) {
       const key = monthKey(entry.occurredAt);
-      monthlyTrendMap.set(key, (monthlyTrendMap.get(key) ?? 0) + Number(entry.kgCo2e));
+      const val = monthlyTrendMap.get(key);
+      monthlyTrendMap.set(key, (val === null ? 0 : val ?? 0) + Number(entry.kgCo2e));
     }
 
     const monthlyTrend = Array.from(monthlyTrendMap.entries()).map(([month, kgCo2e]) => ({
       month,
-      kgCo2e: roundCarbon(kgCo2e)
+      kgCo2e: kgCo2e === null ? null : roundCarbon(kgCo2e)
     }));
 
     const projectedBaseline = latestSimulation ? roundCarbon((baseline / 30) * latestSimulation.days) : baseline;
     const projectedEmissions = latestSimulation ? Number(latestSimulation.projectedKgCo2e) : roundCarbon(projectedBaseline * 0.85);
     const estimatedReductionKg = latestSimulation ? Number(latestSimulation.estimatedSavingsKgCo2e) : roundCarbon(projectedBaseline - projectedEmissions);
-    const estimatedReductionPercent = projectedBaseline > 0 ? roundCarbon((estimatedReductionKg / projectedBaseline) * 100) : 0;
+    const estimatedReductionPercent = projectedBaseline > 0 ? clamp(roundCarbon((estimatedReductionKg / projectedBaseline) * 100), 0, 100) : 0;
     const projection = [
-      { label: "Today", baseline: currentTotal, actionPlan: currentTotal },
+      { label: "Today", baseline: baseline, actionPlan: baseline },
       {
         label: latestSimulation ? `${latestSimulation.days} days` : "30 days",
         baseline: projectedBaseline,
@@ -311,7 +312,7 @@ export const dashboardService = {
     const completionPercentage = progress.completionPercentage;
     const completedEstimatedSavings = progress.completedEstimatedSavings;
     const totalEstimatedSavings = progress.totalEstimatedSavings;
-    const projectedReductionPercent = baseline > 0 ? roundCarbon((totalEstimatedSavings / baseline) * 100) : estimatedReductionPercent;
+    const projectedReductionPercent = baseline > 0 ? clamp(roundCarbon((totalEstimatedSavings / baseline) * 100), 0, 100) : clamp(estimatedReductionPercent, 0, 100);
 
     return {
       widgets: {
@@ -363,12 +364,12 @@ export const dashboardService = {
         }
       },
       futureYou: {
-        currentEmissions: currentTotal,
+        currentEmissions: baseline,
         projectedEmissions,
         estimatedReductionKg,
         estimatedReductionPercent,
         timeframeDays: latestSimulation?.days ?? 30,
-        explanation: `Future You compares today's ${currentTotal.toFixed(1)} kg CO2e footprint with a projected ${projectedEmissions.toFixed(1)} kg CO2e path if you follow the current plan.`,
+        explanation: `Future You compares your monthly baseline of ${baseline.toFixed(1)} kg CO2e footprint with a projected ${projectedEmissions.toFixed(1)} kg CO2e path if you follow the current plan.`,
         recommendationHint: "Use the next action-plan item to turn the lower projection into real progress.",
         progressionMessages: progression.futureYouMessages
       },

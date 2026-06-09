@@ -24,7 +24,7 @@ export function MonthlyTrendChart({
             <XAxis dataKey="month" />
             <YAxis />
             <Tooltip formatter={(value) => [`${Number(value).toFixed(1)} kg CO2e`, "Emissions"]} />
-            <Line type="monotone" dataKey="kgCo2e" stroke="#2f6f9f" strokeWidth={3} dot={{ r: 4 }} />
+            <Line type="monotone" dataKey="kgCo2e" stroke="#2f6f9f" strokeWidth={3} dot={{ r: 4 }} connectNulls={true} />
           </LineChart>
         </ResponsiveContainer>
       </div>
