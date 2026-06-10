@@ -1,16 +1,34 @@
-FROM node:22-alpine AS build
+# Stage 1: Build the TypeScript code
+FROM node:20-alpine AS build
 WORKDIR /app
-ARG VITE_API_BASE_URL
-ARG VITE_APP_NAME
-ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
-ENV VITE_APP_NAME=$VITE_APP_NAME
+
+# Copy package management files
 COPY package*.json ./
+# Copy prisma schema early so it can generate the client during npm install
+COPY prisma ./prisma/
+
 RUN npm install
 COPY . .
+
+# Compile TypeScript to JavaScript (generates the /dist folder)
 RUN npm run build
 
-FROM nginx:1.27-alpine
-COPY --from=build /app/dist /usr/share/nginx/html
-EXPOSE 80
-CMD ["nginx", "-g", "daemon off;"]
+# Stage 2: Premium, lightweight production runtime
+FROM node:20-alpine AS runtime
 
+# FIX: Install the missing native OpenSSL package required by the Prisma engine
+RUN apk add --no-cache openssl
+
+WORKDIR /app
+
+# Copy only the necessary runtime files from the build stage
+COPY package*.json ./
+COPY --from=build /app/node_modules ./node_modules
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/prisma ./prisma
+
+# Expose your backend port (e.g., 5000, 8080, or whatever your Express server listens on)
+EXPOSE 8080
+
+# Run database migrations and start the server
+CMD ["node", "dist/index.js"]
