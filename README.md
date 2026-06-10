@@ -188,6 +188,10 @@ The OCR endpoint (`POST /api/ocr/upload`) accepts a file upload via `multer` (ca
 The extracted quantity is cross-referenced with the `emission_factors` table to compute `kgCo2e`, and a `FootprintEntry` is created with a human-readable note. Filename text is appended to the scan payload for additional classification signal.
 
 ---
+### Google Language traslator 
+
+Language translator from google is been implimented 
+
 
 ### 🤖 AI Coach Context Construction
 
