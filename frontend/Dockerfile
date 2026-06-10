@@ -1,32 +1,25 @@
-# Stage 1: Build compilation
-FROM node:20-slim AS build
+FROM node:22-alpine AS build
 WORKDIR /app
-
-# Install openssl in the build stage
-RUN apt-get update -y && apt-get install -y openssl
-
+ARG VITE_API_BASE_URL
+ARG VITE_APP_NAME
+ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
+ENV VITE_APP_NAME=$VITE_APP_NAME
 COPY package*.json ./
-COPY prisma ./prisma/
-
 RUN npm install
 COPY . .
 RUN npm run build
 
-# Stage 2: Clean, optimized production runtime
-FROM node:20-slim AS runtime
+FROM nginx:1.27-alpine
+COPY --from=build /app/dist /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
 
-# Install openssl in the final runtime stage
-RUN apt-get update -y && apt-get install -y openssl
+
+FROM node:20-alpine AS runtime
+
+# Install native OpenSSL package required by Prisma engine
+RUN apk add --no-cache openssl
 
 WORKDIR /app
-
-# Copy compiled resources from the builder stage
-COPY package*.json ./
-COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/dist ./dist
-COPY --from=build /app/prisma ./prisma
-
-EXPOSE 8080
-
-# Run migrations and launch the Express app
-CMD ["node", "dist/index.js"]
+# ... rest of your setup
