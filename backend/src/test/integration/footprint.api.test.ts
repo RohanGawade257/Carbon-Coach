@@ -85,7 +85,8 @@ describe("Footprint API Integration Tests", () => {
         });
 
       expect(response.status).toBe(400);
-      expect(response.body).toHaveProperty("errors");
+      expect(response.body).toHaveProperty("error");
+      expect(response.body.error.code).toBe("VALIDATION_ERROR");
     });
   });
 
@@ -114,7 +115,7 @@ describe("Footprint API Integration Tests", () => {
         });
 
       expect(response.status).toBe(201);
-      expect(response.body).toEqual(mockEntry);
+      expect(response.body).toEqual({ entry: mockEntry });
       expect(footprintService.createEntry).toHaveBeenCalled();
     });
   });
@@ -132,7 +133,7 @@ describe("Footprint API Integration Tests", () => {
         .set("Authorization", `Bearer ${token}`);
 
       expect(response.status).toBe(200);
-      expect(response.body).toEqual(mockEntries);
+      expect(response.body).toEqual({ entries: mockEntries });
     });
   });
 

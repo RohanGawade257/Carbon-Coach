@@ -61,7 +61,7 @@ describe("AI Coach API Integration Tests", () => {
         });
 
       expect(response.status).toBe(201);
-      expect(response.body).toEqual(mockConversation);
+      expect(response.body).toEqual({ conversation: mockConversation });
       expect(aiService.createConversation).toHaveBeenCalledWith(userId, "Commute Habits");
     });
   });
@@ -104,8 +104,8 @@ describe("AI Coach API Integration Tests", () => {
           content: "How do I cut down my travel footprint?",
         });
 
-      expect(response.status).toBe(201); // message creation is 201 Created
-      expect(response.body).toEqual(mockAiResponse);
+      expect(response.status).toBe(201);
+      expect(response.body).toEqual({ message: mockAiResponse });
       expect(aiService.sendMessage).toHaveBeenCalledWith(
         userId,
         conversationUuid,
