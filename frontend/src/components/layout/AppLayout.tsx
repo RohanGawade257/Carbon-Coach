@@ -22,10 +22,11 @@ export function AppLayout() {
       {/* Main content column */}
       <div className="min-w-0 flex-1 flex flex-col min-h-screen lg:h-screen lg:overflow-y-auto relative z-10">
         <Navbar onMenuClick={() => setSidebarOpen(true)} />
-        <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-4 pb-24 sm:px-6 sm:py-6 lg:px-8 lg:py-8 lg:pb-8">
+        <main className="mx-auto w-full max-w-7xl flex-1 flex flex-col px-4 py-4 pb-24 sm:px-6 sm:py-6 lg:px-8 lg:py-8 lg:pb-8">
           <AnimatePresence mode="wait">
             <motion.div
               key={location.pathname}
+              className="flex-1 flex flex-col"
               initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}

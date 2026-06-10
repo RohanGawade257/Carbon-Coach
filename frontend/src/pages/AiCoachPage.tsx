@@ -57,8 +57,12 @@ export function AiCoachPage() {
   const messages = conversationQuery.data?.conversation.messages ?? [];
 
   return (
-    <div className="flex flex-col gap-4 h-[calc(100vh-6rem)] sm:gap-6">
-      {/* ── Header row ── */}
+    // h-full inherits from AppLayout's flex-1 main column — no hardcoded viewport calc.
+    // This means the flex chain (AppLayout → main → AiCoachPage → ChatWindow) is
+    // unbroken, and ChatWindow's inner overflow-y-auto actually gets a finite height
+    // to overflow against.
+    <div className="flex flex-col gap-4 h-full sm:gap-6">
+      {/* ── Header row — fixed height, never scrolls ── */}
       <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end shrink-0">
         <div>
           <h1 className="text-3xl font-black text-ink">AI Coach</h1>
@@ -74,14 +78,14 @@ export function AiCoachPage() {
         </Button>
       </div>
 
-      {/* ── Error banner (shrinks, doesn't push chat off-screen) ── */}
+      {/* ── Error banner ── */}
       {sendMutation.error || createConversationMutation.error ? (
         <div className="shrink-0">
           <ErrorState message="AI Coach request failed. Try again." />
         </div>
       ) : null}
 
-      {/* ── Chat area — fills remaining height ── */}
+      {/* ── Chat area — flex-1 + min-h-0 lets the child overflow-y-auto work ── */}
       <div className="flex-1 min-h-0">
         {!conversationId ? (
           <Card>
@@ -93,7 +97,11 @@ export function AiCoachPage() {
         ) : conversationQuery.isLoading ? (
           <LoadingState message="Loading conversation" />
         ) : (
-          <ChatWindow messages={messages} isSending={sendMutation.isPending} onSend={(content) => sendMutation.mutateAsync(content).then(() => undefined)} />
+          <ChatWindow
+            messages={messages}
+            isSending={sendMutation.isPending}
+            onSend={(content) => sendMutation.mutateAsync(content).then(() => undefined)}
+          />
         )}
       </div>
     </div>

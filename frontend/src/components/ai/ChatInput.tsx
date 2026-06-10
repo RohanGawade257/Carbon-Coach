@@ -1,27 +1,31 @@
-import { KeyboardEvent, useRef, useState } from "react";
+import { forwardRef, KeyboardEvent, useImperativeHandle, useRef, useState } from "react";
 import { Send } from "lucide-react";
 import { Button } from "../ui/Button";
 
-export function ChatInput({
-  disabled,
-  onSend,
-}: {
+export interface ChatInputHandle {
+  focus(): void;
+}
+
+const ChatInput = forwardRef<HTMLTextAreaElement, {
   disabled?: boolean;
   onSend: (content: string) => Promise<void>;
-}) {
+}>(function ChatInput({ disabled, onSend }, ref) {
   const [content, setContent] = useState("");
   const [isSending, setIsSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
-  // ── Auto-resize textarea height as user types ──────────────────────────────
+  // Expose the textarea element to the parent (ChatWindow) via ref
+  useImperativeHandle(ref, () => textareaRef.current as HTMLTextAreaElement, []);
+
+  // ── Auto-resize textarea as the user types ────────────────────────────────
   function resizeTextarea() {
     const el = textareaRef.current;
     if (!el) return;
-    el.style.height = "auto";                          // reset
-    el.style.height = `${Math.min(el.scrollHeight, 160)}px`; // grow, cap at ~6 rows
+    el.style.height = "auto";
+    el.style.height = `${Math.min(el.scrollHeight, 160)}px`; // cap ~6 rows
   }
 
-  // ── Core send logic ────────────────────────────────────────────────────────
+  // ── Core send handler ─────────────────────────────────────────────────────
   async function submitMessage() {
     const trimmed = content.trim();
     if (!trimmed || disabled || isSending) return;
@@ -29,40 +33,32 @@ export function ChatInput({
     setContent("");
     setIsSending(true);
 
-    // Reset height after clearing
     if (textareaRef.current) {
-      textareaRef.current.style.height = "auto";
+      textareaRef.current.style.height = "auto"; // reset height on clear
     }
 
     try {
       await onSend(trimmed);
     } finally {
       setIsSending(false);
-      // Return focus to the input after the response arrives
       textareaRef.current?.focus();
     }
   }
 
-  // ── Keyboard handler: Enter = send, Shift+Enter = newline ─────────────────
+  // ── Enter = send, Shift+Enter = newline ───────────────────────────────────
   function handleKeyDown(event: KeyboardEvent<HTMLTextAreaElement>) {
     if (event.key === "Enter" && !event.shiftKey) {
-      // Prevent the browser from inserting a newline
       event.preventDefault();
       void submitMessage();
     }
-    // Shift+Enter falls through — browser inserts \n normally
   }
 
   const isDisabled = disabled || isSending;
-  const canSend = content.trim().length > 0 && !isDisabled;
 
   return (
     <form
       className="flex items-end gap-2 rounded-2xl border border-emerald-100 bg-white p-2 shadow-soft sm:gap-3 sm:p-3"
-      onSubmit={(e) => {
-        e.preventDefault();
-        void submitMessage();
-      }}
+      onSubmit={(e) => { e.preventDefault(); void submitMessage(); }}
     >
       <label className="sr-only" htmlFor="chat-message">
         Message Carbon Coach
@@ -71,31 +67,19 @@ export function ChatInput({
       <textarea
         ref={textareaRef}
         id="chat-message"
-        className="
-          focus-ring
-          flex-1 resize-none rounded-xl border border-emerald-200
-          bg-slate-50 px-3 py-2.5
-          text-sm leading-6 text-ink
-          placeholder:text-slate-400
-          transition-[height] duration-100
-          disabled:opacity-50
-        "
+        className="focus-ring flex-1 resize-none rounded-xl border border-emerald-200 bg-slate-50 px-3 py-2.5 text-sm leading-6 text-ink placeholder:text-slate-400 disabled:opacity-50"
         value={content}
-        onChange={(e) => {
-          setContent(e.target.value);
-          resizeTextarea();
-        }}
+        onChange={(e) => { setContent(e.target.value); resizeTextarea(); }}
         onKeyDown={handleKeyDown}
         placeholder="Ask how to reduce your footprint… (Enter to send, Shift+Enter for new line)"
         rows={1}
         disabled={isDisabled}
         aria-label="Message Carbon Coach"
-        aria-multiline="true"
       />
 
       <Button
         type="submit"
-        disabled={!canSend}
+        disabled={!content.trim() || isDisabled}
         isLoading={isSending}
         loadingLabel=""
         aria-label="Send message"
@@ -106,4 +90,7 @@ export function ChatInput({
       </Button>
     </form>
   );
-}
+});
+
+ChatInput.displayName = "ChatInput";
+export { ChatInput };
