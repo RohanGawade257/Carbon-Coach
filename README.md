@@ -536,17 +536,6 @@ carbon-coach/
 </div>
 
 
-## User Testing Results
-
-8 testers completed onboarding.
-
-Average completion time: 3 minutes.
-
-87% successfully generated a Carbon Twin.
-
-Most requested feature:
-Regional emission factors.
-
 
 ## Test Report
 
@@ -582,12 +571,58 @@ Measured using Google Lighthouse.
 
 ## Testing Strategy
 
+- 44 automated tests covering core business logic and APIs
+
 The application is validated through:
 
 - Authentication flow testing
 - Carbon calculation verification
 - API validation
 - Form validation
-- Error handling checks
+- Error handling checks logic
 
 Future improvements include automated unit and integration tests.
+
+## Automated Testing & Quality Assurance
+
+To improve reliability and maintainability, a comprehensive automated testing framework was implemented across the project.
+
+### Testing Stack
+
+* Vitest
+* Supertest
+* Testing Library
+* V8 Coverage Reporter
+
+### Covered Functionality
+
+* Carbon emission calculations
+* Footprint tracking and streak logic
+* Eco-challenges and reward system
+* Badge and achievement system
+* Authentication APIs
+* Dashboard APIs
+* Footprint APIs
+* AI Coach APIs
+
+### Quality Improvements
+
+* Added unit tests for core business logic
+* Added integration tests for critical backend endpoints
+* Improved authentication error handling
+* Added test coverage reporting
+* Established a scalable testing structure for future development
+
+### Running Tests
+
+```bash
+npm test
+```
+
+### Running Coverage Report
+
+```bash
+npm run test:coverage
+```
+
+The project now includes automated validation of critical features to ensure stability, correctness, and maintainability as new features are added.
