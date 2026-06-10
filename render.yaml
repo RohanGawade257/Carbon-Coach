@@ -16,6 +16,19 @@ services:
       - key: GEMINI_MODEL
         value: gemini-2.5-flash-lite
       - key: FRONTEND_ORIGIN
+        # Set this to your frontend Render URL, e.g. https://carbon-coach-frontend.onrender.com
         sync: false
       - key: NODE_ENV
         value: production
+
+  - type: web
+    name: carbon-coach-frontend
+    runtime: docker
+    rootDir: frontend
+    dockerfilePath: ./Dockerfile
+    envVars:
+      - key: VITE_API_BASE_URL
+        # Must match the Render URL of the carbon-coach-api service above (no trailing slash)
+        value: https://carbon-coach-api.onrender.com/api
+      - key: VITE_APP_NAME
+        value: Carbon Coach
