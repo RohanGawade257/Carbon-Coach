@@ -27,7 +27,13 @@ export async function authMiddleware(req: Request, _res: Response, next: NextFun
   }
 
   const token = header.slice("Bearer ".length);
-  const payload = verifyToken(token);
+  let payload;
+  try {
+    payload = verifyToken(token);
+  } catch (err) {
+    throw new AppError("Invalid or expired session", 401, "INVALID_SESSION");
+  }
+
   const user = await prisma.user.findUnique({
     where: { id: payload.userId },
     select: { id: true, email: true, displayName: true }
