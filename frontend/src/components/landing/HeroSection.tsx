@@ -1,9 +1,14 @@
 import { ArrowRight, Leaf } from "lucide-react";
 import { Button } from "../ui/Button";
+import { LanguageSwitcher } from "../ui/LanguageSwitcher";
 
 export function HeroSection({ onDemo, loading }: { onDemo: () => void; loading: boolean }) {
   return (
     <section className="relative overflow-hidden bg-ink text-white">
+      {/* Language switcher — top right, above overlay */}
+      <div className="absolute right-4 top-4 z-10 sm:right-6 sm:top-5">
+        <LanguageSwitcher variant="dark" />
+      </div>
       <div
         className="absolute inset-0 opacity-30"
         style={{

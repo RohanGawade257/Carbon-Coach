@@ -2,6 +2,7 @@ import { LogOut, Menu, Flame } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { Button } from "../ui/Button";
+import { LanguageSwitcher } from "../ui/LanguageSwitcher";
 import { useAuthStore } from "../../stores/authStore";
 
 export function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
@@ -52,6 +53,8 @@ export function Navbar({ onMenuClick }: { onMenuClick: () => void }) {
               <span>{user.points} pts</span>
             </motion.div>
           )}
+
+          <LanguageSwitcher />
 
           <Button variant="ghost" onClick={handleLogout}>
             <LogOut className="h-4 w-4" aria-hidden="true" />

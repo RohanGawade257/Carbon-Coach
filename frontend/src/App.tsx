@@ -19,6 +19,7 @@ import { ChallengesPage } from "./pages/ChallengesPage";
 import { BadgesPage } from "./pages/BadgesPage";
 import { ProfilePage } from "./pages/ProfilePage";
 import { ToastViewport } from "./components/ui/ToastViewport";
+import { GoogleTranslate } from "./components/ui/GoogleTranslate";
 
 export default function App() {
   const hydrateMe = useAuthStore((state) => state.hydrateMe);
@@ -59,6 +60,7 @@ export default function App() {
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
+    <GoogleTranslate />
     <ToastViewport />
     </>
   );
