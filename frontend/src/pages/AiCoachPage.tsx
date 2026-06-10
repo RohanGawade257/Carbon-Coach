@@ -57,8 +57,9 @@ export function AiCoachPage() {
   const messages = conversationQuery.data?.conversation.messages ?? [];
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end">
+    <div className="flex flex-col gap-4 h-[calc(100vh-6rem)] sm:gap-6">
+      {/* ── Header row ── */}
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-end shrink-0">
         <div>
           <h1 className="text-3xl font-black text-ink">AI Coach</h1>
           <p className="mt-1 text-sm text-slate-600">Ask for sustainability guidance powered by your Carbon Twin.</p>
@@ -72,19 +73,29 @@ export function AiCoachPage() {
           New Chat
         </Button>
       </div>
-      {sendMutation.error || createConversationMutation.error ? <ErrorState message="AI Coach request failed. Try again." /> : null}
-      {!conversationId ? (
-        <Card>
-          <p className="text-sm text-slate-600">Start a chat to ask Carbon Coach for your next best action.</p>
-          <div className="mt-4">
-            <Button isLoading={createConversationMutation.isPending} loadingLabel="Starting Chat..." onClick={() => createConversationMutation.mutate()}>Start Chat</Button>
-          </div>
-        </Card>
-      ) : conversationQuery.isLoading ? (
-        <LoadingState message="Loading conversation" />
-      ) : (
-        <ChatWindow messages={messages} isSending={sendMutation.isPending} onSend={(content) => sendMutation.mutateAsync(content).then(() => undefined)} />
-      )}
+
+      {/* ── Error banner (shrinks, doesn't push chat off-screen) ── */}
+      {sendMutation.error || createConversationMutation.error ? (
+        <div className="shrink-0">
+          <ErrorState message="AI Coach request failed. Try again." />
+        </div>
+      ) : null}
+
+      {/* ── Chat area — fills remaining height ── */}
+      <div className="flex-1 min-h-0">
+        {!conversationId ? (
+          <Card>
+            <p className="text-sm text-slate-600">Start a chat to ask Carbon Coach for your next best action.</p>
+            <div className="mt-4">
+              <Button isLoading={createConversationMutation.isPending} loadingLabel="Starting Chat..." onClick={() => createConversationMutation.mutate()}>Start Chat</Button>
+            </div>
+          </Card>
+        ) : conversationQuery.isLoading ? (
+          <LoadingState message="Loading conversation" />
+        ) : (
+          <ChatWindow messages={messages} isSending={sendMutation.isPending} onSend={(content) => sendMutation.mutateAsync(content).then(() => undefined)} />
+        )}
+      </div>
     </div>
   );
 }
