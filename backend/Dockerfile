@@ -20,15 +20,18 @@ RUN apt-get update -y && apt-get install -y openssl ca-certificates
 COPY package*.json ./
 COPY prisma ./prisma
 
-# 2. Install packages first (ensures tsx is available for seeding)
+# 2. Install packages 
 RUN npm install
 RUN npx prisma generate
 COPY --from=build /app/dist ./dist
 
-# 3. Set production mode environment variable here
+# 👇 ADD THIS LINE BELOW TO FIX THE SEED IMPORT ERROR
+COPY src ./src
+
+# 3. Set production mode environment variable
 ENV NODE_ENV=production
 
 EXPOSE 4000
 
-# Keep your startup command exactly the same!
+# Startup command stays completely identical
 CMD ["sh", "-c", "npx prisma migrate deploy && npm run db:seed && node dist/server.js"]
