@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Navigate, Route, Routes } from "react-router-dom";
+import { Route, Routes } from "react-router-dom";
 import { useLocation } from "react-router-dom";
 import { ProtectedRoute } from "./routes/ProtectedRoute";
 import { useAuthStore } from "./stores/authStore";
@@ -18,6 +18,7 @@ import { RecommendationsPage } from "./pages/RecommendationsPage";
 import { ChallengesPage } from "./pages/ChallengesPage";
 import { BadgesPage } from "./pages/BadgesPage";
 import { ProfilePage } from "./pages/ProfilePage";
+import { NotFoundPage } from "./pages/NotFoundPage";
 import { ToastViewport } from "./components/ui/ToastViewport";
 import { GoogleTranslate } from "./components/ui/GoogleTranslate";
 
@@ -58,7 +59,7 @@ export default function App() {
           <Route path="/profile" element={<ProfilePage />} />
         </Route>
       </Route>
-      <Route path="*" element={<Navigate to="/" replace />} />
+      <Route path="*" element={<NotFoundPage />} />
     </Routes>
     <GoogleTranslate />
     <ToastViewport />
