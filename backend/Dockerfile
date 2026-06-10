@@ -34,4 +34,4 @@ ENV NODE_ENV=production
 EXPOSE 4000
 
 # Startup command stays completely identical
-CMD ["sh", "-c", "npx prisma migrate deploy && npm run db:seed && node dist/server.js"]
+CMD ["sh", "-c", "npx prisma db push && npm run db:seed && node dist/server.js"]
