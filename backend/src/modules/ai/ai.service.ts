@@ -90,7 +90,7 @@ export const aiService = {
 
     await prisma.aiConversation.update({
       where: { id: conversationId },
-      data: { title: conversation.title }
+      data: { updatedAt: new Date() }
     });
 
     return assistantMessage;

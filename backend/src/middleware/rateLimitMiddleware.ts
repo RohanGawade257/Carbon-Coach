@@ -14,3 +14,10 @@ export const aiRateLimit = rateLimit({
   legacyHeaders: false
 });
 
+export const ocrRateLimit = rateLimit({
+  windowMs: 60 * 1000,
+  limit: 5,
+  standardHeaders: true,
+  legacyHeaders: false
+});
+

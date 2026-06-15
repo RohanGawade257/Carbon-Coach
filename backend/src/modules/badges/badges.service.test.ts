@@ -47,23 +47,23 @@ describe("Badges Service - Achievements Evaluation", () => {
     vi.mocked(prisma.actionPlanItem.count).mockResolvedValue(0);
 
     // Mock findUnique for badges so rule key resolution passes
-    vi.mocked(prisma.badge.findUnique).mockImplementation((args: any) => {
+    vi.mocked(prisma.badge.findUnique).mockImplementation(((args: any) => {
       const ruleKey = args.where.ruleKey;
       return Promise.resolve({
         id: `badge-id-${ruleKey}`,
         name: `Badge ${ruleKey}`,
         ruleKey,
       } as any);
-    });
+    }) as any);
 
     vi.mocked(prisma.userBadge.findUnique).mockResolvedValue(null);
-    vi.mocked(prisma.userBadge.create).mockImplementation((args: any) => {
+    vi.mocked(prisma.userBadge.create).mockImplementation(((args: any) => {
       return Promise.resolve({
         id: "ub-new",
         userId: args.data.userId,
         badgeId: args.data.badgeId,
       } as any);
-    });
+    }) as any);
   });
 
   it("should get all badges with user badge links", async () => {
@@ -97,11 +97,11 @@ describe("Badges Service - Achievements Evaluation", () => {
 
   it("should award GREEN_EXPLORER if user has joined eco-challenges", async () => {
     // Return 1 for count of user challenges
-    vi.mocked(prisma.userChallenge.count).mockImplementation((args: any) => {
+    vi.mocked(prisma.userChallenge.count).mockImplementation(((args: any) => {
       // If evaluating completed challenges count, return 0, else 1
       if (args.where && args.where.status === "Completed") return 0;
       return 1;
-    });
+    }) as any);
 
     await badgesService.evaluateForUser(userId);
 
@@ -129,10 +129,10 @@ describe("Badges Service - Achievements Evaluation", () => {
 
   it("should award CLIMATE_CHAMPION if user has completed 4 or more reduction actions", async () => {
     // 2 completed challenges, 1 completed recommendation, 1 completed action item = 4
-    vi.mocked(prisma.userChallenge.count).mockImplementation((args: any) => {
+    vi.mocked(prisma.userChallenge.count).mockImplementation(((args: any) => {
       if (args.where && args.where.status === "Completed") return 2;
       return 2; // total joined
-    });
+    }) as any);
     vi.mocked(prisma.recommendation.count).mockResolvedValue(1);
     vi.mocked(prisma.actionPlanItem.count).mockResolvedValue(1);
 

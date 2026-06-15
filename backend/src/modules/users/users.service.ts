@@ -65,7 +65,6 @@ export const usersService = {
         displayName: true,
         currentStreak: true,
         carbonScore: true,
-        email: true,
         _count: {
           select: { footprintEntries: true }
         }
