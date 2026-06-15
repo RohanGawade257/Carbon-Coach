@@ -71,8 +71,8 @@ export const footprintService = {
 
     }
 
-    await usersService.updateUserCarbonScore(userId);
     await badgesService.evaluateForUser(userId);
+    await usersService.updateUserCarbonScore(userId);
     return entry;
   },
 

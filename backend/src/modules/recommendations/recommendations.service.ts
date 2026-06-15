@@ -6,6 +6,7 @@ import { recommendationListAiSchema } from "../ai/aiResponse.schemas";
 import { promptTemplates } from "../ai/promptTemplates";
 import { generateStructuredAiResult } from "../ai/structuredAi.service";
 import { buildTwinContext } from "../carbonTwin/twinContext.builder";
+import { usersService } from "../users/users.service";
 import { badgesService } from "../badges/badges.service";
 
 type RecommendationWithCategory = Prisma.RecommendationGetPayload<{ include: { category: true } }>;
@@ -129,6 +130,7 @@ export const recommendationsService = {
 
     if (status === "Completed") {
       await badgesService.evaluateForUser(userId);
+      await usersService.updateUserCarbonScore(userId);
     }
 
     return updated;
